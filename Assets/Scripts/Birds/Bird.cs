@@ -80,9 +80,9 @@ namespace Assets.Scripts.Birds
             IPidController pidX = new PidController();
             IPidController pidY = new PidController();
 
-            var p = 0.5f;
+            var p = 0.6f;
             var i = 0.1344f;
-            var d = 1.386f;
+            var d = 1.586f;
 
             pidX.Ready(p, i, d);
 

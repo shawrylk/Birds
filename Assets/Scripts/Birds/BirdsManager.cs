@@ -9,7 +9,7 @@ using UnityEngine;
 public class BirdsManager : BaseScript
 {
     public GameObject BirdPrefab;
-    private const float SPAWN_TIME = 1f;
+    private const float SPAWN_TIME = 0.1f;
 
     private async void Awake()
     {

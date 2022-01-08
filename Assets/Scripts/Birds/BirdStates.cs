@@ -119,12 +119,13 @@ namespace Assets.Scripts.Birds
                         if (birdContext.Data.Channel.TryDequeue(out var result))
                         {
                             if (result.key == BirdSignal.FoundFood
-                                && result.value is Collider2D c)
+                                && result.value is Collider2D c
+                                && c != null)
                             {
-                                birdContext.State = idlingState;
-                                _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
-                                if (c.gameObject.activeSelf) Destroy(c.gameObject, 0.1f);
-                                break;
+                                    birdContext.State = idlingState;
+                                    _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
+                                    Destroy(c.gameObject, 0.1f);
+                                    break;
                             }
                         }
 
