@@ -19,9 +19,11 @@ namespace Assets.Scripts.Utilities
             set => base.ID = value;
         }
 
-        public Func<BirdContext, IEnumerator> Coroutine { 
-            get => base.Couroutine; 
-            set => base.Couroutine = (Func<Context, IEnumerator>)value; }
+        public Func<BirdContext, IEnumerator> Coroutine
+        {
+            get => base.Couroutine;
+            set => base.Couroutine = (Func<Context, IEnumerator>)value;
+        }
     }
     public class BirdContextData
     {
@@ -31,6 +33,11 @@ namespace Assets.Scripts.Utilities
     public class BirdContext : Context
     {
         public BirdContextData Data { get; set; }
+        public new BirdContextState State
+        {
+            get => base.State as BirdContextState;
+            set => base.State = value;
+        }
         public BirdContext(MonoBehaviour owner) : base(owner) { }
         public void Run(BirdContextData data, BirdContextState state)
         {

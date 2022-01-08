@@ -19,13 +19,17 @@ namespace Assets.Scripts.Birds
         private Rigidbody2D _rigidbody = null;
         private SpriteRenderer _sprite = null;
         private BirdContext _context = null;
+        private Animator _animator = null;
+        private Collider2D _collider = null;
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
 
             _sprite = GetComponent<SpriteRenderer>();
 
-            //StartFindFoodCoroutine(_cancelSource.Token);
+            _animator = GetComponent<Animator>();
+
+            _collider = GetComponent<Collider2D>();
 
             StartStateMachine();
         }
@@ -72,7 +76,7 @@ namespace Assets.Scripts.Birds
         }
         private Action<Vector3, float> GetPidHandler()
         {
-            const float MAX_MAGNITUDE = 1.5f;
+            const float MAX_MAGNITUDE = 2f;
             IPidController pidX = new PidController();
             IPidController pidY = new PidController();
 
@@ -104,7 +108,7 @@ namespace Assets.Scripts.Birds
             if (collision.gameObject.CompareTag(Global.FOOD_TAG))
             {
                 _context.Data.Channel.Enqueue((
-                    key: BirdSignal.AteFood,
+                    key: BirdSignal.FoundFood,
                     value: collision));
             }
         }

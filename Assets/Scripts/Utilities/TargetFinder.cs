@@ -11,6 +11,7 @@ namespace Assets.Scripts.Utilities
     public class TargetFinder : ITargetFinder
     {
         private IList<Transform> _targets;
+        private ITargetFinder _randomPath = new RandomPathGenerator();
         public void UpdateTargets(IList<Transform> targets)
         {
             _targets = targets;
@@ -18,6 +19,12 @@ namespace Assets.Scripts.Utilities
 
         public (Transform, Vector3) GetHighestPriorityTarget(Vector3 currentPosition)
         {
+            if (_targets is null
+                || _targets.Count == 0)
+            {
+                return _randomPath.GetHighestPriorityTarget(currentPosition);
+            }
+
             var minDistance = float.MaxValue;
             Transform nearestTransform = null;
             foreach (var target in _targets)

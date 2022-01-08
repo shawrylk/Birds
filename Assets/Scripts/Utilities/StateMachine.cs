@@ -18,7 +18,7 @@ namespace Assets.Scripts.Utilities
     }
     public abstract class Context
     {
-        public State State { get; set; }
+        protected State State { get; set; }
         private MonoBehaviour _owner;
         public Context(MonoBehaviour owner)
         {

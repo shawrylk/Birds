@@ -66,5 +66,10 @@ namespace Assets.Scripts.Utilities
             var worldCoordiantes = Camera.main.ScreenToWorldPoint(screenCoordiantes);
             return new Vector2(worldCoordiantes.x, worldCoordiantes.y);
         }
+
+        public static Func<float, float> GetSToHzHandler(this float timeStepSeconds)
+        {
+            return (seconds) => 1 / timeStepSeconds * seconds;
+        }
     }
 }

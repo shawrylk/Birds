@@ -19,6 +19,6 @@ namespace Assets.Scripts.Birds
     public class BirdSignal : Enumeration
     {
         public BirdSignal(int id, string name) : base(id, name) { }
-        public static BirdSignal AteFood = new BirdSignal(0, nameof(AteFood));
+        public static BirdSignal FoundFood = new BirdSignal(0, nameof(FoundFood));
     }
 }
