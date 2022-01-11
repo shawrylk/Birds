@@ -1,4 +1,4 @@
-﻿using Assets.Contracts;
+using Assets.Contracts;
 using Assets.Scripts.Utilities;
 using System;
 using System.Collections.Generic;
@@ -9,22 +9,24 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public class Food : BaseScript
+    public class Cash : BaseScript
     {
         private Rigidbody2D _rigidbody;
-        public int Price = 10;
+        public int Value = 10;
+
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
             _rigidbody.velocity = new Vector2(0, -0.5f);
         }
 
-        private void OnTriggerEnter2D(Collider2D collision)
+        private void OnCollisionEnter2D(Collision2D collision)
         {
             if (collision.gameObject.CompareTag(Global.BOUNDARY_TAG))
             {
-                Destroy(gameObject, 0.1f);
+                Destroy(gameObject, 5f);
             }
         }
+
     }
 }

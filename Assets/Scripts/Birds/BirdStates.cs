@@ -19,6 +19,7 @@ namespace Assets.Scripts.Birds
             BirdContextState huntingState = null;
             BirdContextState starvingState = null;
             BirdContextState deathState = null;
+            bool isGrown = false;
             #endregion
             #region Local Functions
             BirdContextState GetIdlingState()
@@ -65,24 +66,32 @@ namespace Assets.Scripts.Birds
             Func<Context, IEnumerator> HandleIdlingState()
             {
                 var positionHandler = GetPositionResolverHandler();
-                var pidHandler = GetPidHandler();
+                var (pidHandler, resetPid) = GetPidHandler(0.1f, 0f, 0.5f, -2.5f, 2.5f);
                 var targetFinder = new RandomPathGenerator();
                 var timeStep = 0.02f;
                 var sToHz = timeStep.GetSToHzHandler();
-                var timeOutHz = sToHz(Range(7, 10));
+                var timeOutHz = sToHz(Range(12, 15));
                 IEnumerator idlingHandler(Context context)
                 {
                     var birdContext = context as BirdContext;
                     if (birdContext is null) yield return null;
                     var time = 1;
-                    print($"{birdContext.State.ID}");
+                    resetPid();
+                    //print($"{birdContext.State.ID}");
                     while (true)
                     {
                         yield return new WaitForSeconds(timeStep);
 
                         if (birdContext.Data.Channel.TryDequeue(out var result))
                         {
-                            // TODO
+                            if (!isGrown
+                                && result.key == BirdSignal.Grown)
+                            {
+                                transform.localScale = new Vector3(
+                                    transform.localScale.x * 1.5f,
+                                    transform.localScale.y * 1.5f,
+                                    transform.localScale.z);
+                            }
                         }
 
                         var position = positionHandler(targetFinder);
@@ -101,9 +110,9 @@ namespace Assets.Scripts.Birds
                 var timeStep = 0.1f;
                 var sToHz = timeStep.GetSToHzHandler();
                 var timeOutHz1 = sToHz(Range(5, 7));
-                var timeOutHz2 = timeOutHz1 + sToHz(Range(10, 12));
+                var timeOutHz2 = timeOutHz1 + sToHz(Range(15, 17));
                 var positionHandler = GetPositionResolverHandler();
-                var pidHandler = GetPidHandler();
+                var (pidHandler, resetPid) = GetPidHandler(10f, 4f, 11f, -5f, 5f);
                 var targetFinder = new TargetFinder();
                 IEnumerator huntingHandler(Context context)
                 {
@@ -111,7 +120,8 @@ namespace Assets.Scripts.Birds
                     if (birdContext is null) yield return null;
                     var time = 0;
                     var grayScale = 0.0f;
-                    print($"{birdContext.State.ID}");
+                    resetPid();
+                    //print($"{birdContext.State.ID}");
                     while (true)
                     {
                         yield return new WaitForSeconds(timeStep);
@@ -122,10 +132,10 @@ namespace Assets.Scripts.Birds
                                 && result.value is Collider2D c
                                 && c != null)
                             {
-                                    birdContext.State = idlingState;
-                                    _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
-                                    Destroy(c.gameObject, 0.1f);
-                                    break;
+                                birdContext.State = idlingState;
+                                _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
+                                Destroy(c.gameObject, 0.1f);
+                                break;
                             }
                         }
 
@@ -154,7 +164,7 @@ namespace Assets.Scripts.Birds
                 {
                     var birdContext = context as BirdContext;
                     if (birdContext is null) yield return null;
-                    print($"{birdContext.State.ID}");
+                    //print($"{birdContext.State.ID}");
 
                     while (true)
                     {
@@ -173,7 +183,7 @@ namespace Assets.Scripts.Birds
                 {
                     var birdContext = context as BirdContext;
                     if (birdContext is null) yield return null;
-                    print($"{birdContext.State.ID}");
+                    //print($"{birdContext.State.ID}");
 
                     _animator.enabled = false;
                     _collider.enabled = false;

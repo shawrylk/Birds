@@ -71,5 +71,19 @@ namespace Assets.Scripts.Utilities
         {
             return (seconds) => 1 / timeStepSeconds * seconds;
         }
+
+        public static GameObject GetGameObject(this Dictionary<string, GameObject> dictionary, string keyTag)
+        {
+            GameObject go = null;
+
+            if (!Global.GameObjects.TryGetValue(keyTag, out go))
+            {
+                go = GameObject
+                    .FindGameObjectWithTag(keyTag);
+                Global.GameObjects.TryAdd(keyTag, go);
+            }
+
+            return go;
+        }
     }
 }

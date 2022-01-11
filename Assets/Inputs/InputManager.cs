@@ -1,3 +1,4 @@
+using Assets.Contracts;
 using Assets.Scripts.Utilities;
 using System;
 using System.Collections;
@@ -5,22 +6,30 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
 
+public class InputContext
+{
+    public InputAction.CallbackContext Context { get; set; }
+    public TouchControls.TouchActions TouchActions { get; set; }
+    public Vector2 Position { get => TouchActions.TouchPosition?.ReadValue<Vector2>() ?? new Vector2(); }
+    public bool Handled { get; set; } = false;
+}
 [DefaultExecutionOrder(-1)]
-public class InputManager : LifeTimeBase.SingletonScript<InputManager>
+public class InputManager : LifeTimeBase.SingletonScript<InputManager>, IInputManager
 {
     private TouchControls _touchControls;
+    private object _eventLock = new object();
 
-    private event Action<Vector2, double> onStartTouch;
-    public event Action<Vector2, double> OnStartTouch
+    private event Action<InputContext> onStartTouch;
+    public event Action<InputContext> OnStartTouch
     {
-        add => onStartTouch += value;
-        remove => onStartTouch -= value;
+        add { lock (_eventLock) onStartTouch += value; }
+        remove { lock (_eventLock) onStartTouch -= value; }
     }
-    private event Action<Vector2, double> onEndTouch;
-    public event Action<Vector2, double> OnEndTouch
+    private event Action<InputContext> onEndTouch;
+    public event Action<InputContext> OnEndTouch
     {
-        add => onEndTouch += value;
-        remove => onEndTouch -= value;
+        add { lock (_eventLock) onEndTouch += value; }
+        remove { lock (_eventLock) onEndTouch -= value; }
     }
     private void Awake()
     {
@@ -36,23 +45,42 @@ public class InputManager : LifeTimeBase.SingletonScript<InputManager>
     private void OnEnable()
     {
         _touchControls.Enable();
-        //TouchSimulation.Enable();
     }
 
     private void OnDisable()
     {
         _touchControls.Disable();
-        //TouchSimulation.Disable();
     }
 
     private (Action<InputAction.CallbackContext> startTouchHandler, Action<InputAction.CallbackContext> endTouchHandler) GetTouchHandlers()
     {
         bool firstTouch = true;
 
+        void invokeHandler(InputAction.CallbackContext context, Action<InputContext> action)
+        {
+            var param = new InputContext
+            {
+                Context = context,
+                TouchActions = _touchControls.Touch,
+                Handled = false
+            };
+
+            lock (_eventLock)
+            {
+                var list = action?.GetInvocationList();
+                if (list is null) return;
+                foreach (Action<InputContext> handler in list)
+                {
+                    handler.Invoke(param);
+                    if (param.Handled) break;
+                }
+            }
+        }
+
         IEnumerator touchCoroutine(InputAction.CallbackContext context)
         {
             yield return new WaitForEndOfFrame();
-            onStartTouch?.Invoke(_touchControls.Touch.TouchPosition.ReadValue<Vector2>(), context.startTime);
+            invokeHandler(context, onStartTouch);
         }
 
         Action<InputAction.CallbackContext> startTouchHandler = context =>
@@ -64,13 +92,13 @@ public class InputManager : LifeTimeBase.SingletonScript<InputManager>
             }
             else
             {
-                onStartTouch?.Invoke(_touchControls.Touch.TouchPosition.ReadValue<Vector2>(), context.startTime);
+                invokeHandler(context, onStartTouch);
             }
         };
 
         Action<InputAction.CallbackContext> endTouchHandler = context =>
         {
-            onEndTouch?.Invoke(_touchControls.Touch.TouchPosition.ReadValue<Vector2>(), context.time);
+            invokeHandler(context, onEndTouch);
         };
 
         return (startTouchHandler, endTouchHandler);

@@ -3,24 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
+[DefaultExecutionOrder(Global.BOUNDARIES_ORDER)]
 public class Boundaries : MonoBehaviour
 {
-    void Awake()
+    public void Awake()
     {
-        if (!Global.Items.TryGetValue(Global.BOUNDARIES_TAG, out _))
-        {
-            var boundaries = gameObject
-                .transform
-                .GetComponentsInChildren<Transform>()
-                .Skip(Global.PARENT_TRANSFORM)
-                .ToDictionary(t => t.name.ToLower(), t => t);
+        var boundaries = gameObject
+            .transform
+            .GetComponentsInChildren<Transform>()
+            .Skip(Global.PARENT_TRANSFORM)
+            .ToDictionary(t => t.name.ToLower(), t => t);
 
-            SetUpBoundaries(boundaries, Global.UnitsPerPixel);
+        SetUpBoundaries(boundaries, Global.UnitsPerPixel);
 
-            Global.Items.TryAdd(Global.BOUNDARIES_TAG, boundaries);
-        }
-
+        Global.Items.Add(Global.BOUNDARIES_TAG, boundaries);
     }
     private void SetUpBoundaries(Dictionary<string, Transform> boundaries, float unit)
     {

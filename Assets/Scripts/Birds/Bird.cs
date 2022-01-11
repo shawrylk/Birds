@@ -11,11 +11,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using static UnityEngine.Random;
 
 namespace Assets.Scripts.Birds
 {
     public partial class Bird : BaseScript
     {
+        public GameObject[] CoinPrefabs;
+
         private Rigidbody2D _rigidbody = null;
         private SpriteRenderer _sprite = null;
         private BirdContext _context = null;
@@ -32,6 +35,8 @@ namespace Assets.Scripts.Birds
             _collider = GetComponent<Collider2D>();
 
             StartStateMachine();
+
+            ProduceCash();
         }
 
         private void Update()
@@ -49,18 +54,12 @@ namespace Assets.Scripts.Birds
         }
         private Func<ITargetFinder, Vector3> GetPositionResolverHandler()
         {
-            GameObject foods = null;
+            var foodManager = Global.GameObjects.GetGameObject(Global.FOOD_MANAGER_TAG);
 
-            if (!Global.GameObjects.TryGetValue(Global.FOODS_TAG, out foods))
-            {
-                foods = GameObject
-                    .FindGameObjectWithTag(Global.FOODS_TAG);
-                Global.GameObjects.TryAdd(Global.FOODS_TAG, foods);
-            }
 
             return (targetFinder) =>
             {
-                var targets = foods
+                var targets = foodManager
                     .GetComponentsInChildren<Transform>()
                     .Skip(Global.PARENT_TRANSFORM)
                     .ToList();
@@ -74,33 +73,33 @@ namespace Assets.Scripts.Birds
                 return targetPosition;
             };
         }
-        private Action<Vector3, float> GetPidHandler()
+        private (Action<Vector3, float> pid, Action reset) GetPidHandler(float p, float i, float d, float minClamp = 3f, float maxClamp = 3f)
         {
-            const float MAX_MAGNITUDE = 2f;
             IPidController pidX = new PidController();
             IPidController pidY = new PidController();
 
-            var p = 0.6f;
-            var i = 0.1344f;
-            var d = 1.586f;
-
             pidX.Ready(p, i, d);
-
             pidY.Ready(p, i, d);
 
-            return (targetPosition, timeStep) =>
+            return ((targetPosition, timeStep) =>
             {
                 var distanceVector = targetPosition - transform.position;
 
                 var magnitudeX = pidX.GetOutputValue(distanceVector.x, timeStep);
                 var magnitudeY = pidY.GetOutputValue(distanceVector.y, timeStep);
 
-                magnitudeX = Mathf.Clamp(magnitudeX, -MAX_MAGNITUDE, MAX_MAGNITUDE);
-                magnitudeY = Mathf.Clamp(magnitudeY, -MAX_MAGNITUDE, MAX_MAGNITUDE);
+                magnitudeX = Mathf.Clamp(magnitudeX, minClamp, maxClamp);
+                magnitudeY = Mathf.Clamp(magnitudeY, minClamp, maxClamp);
 
                 _rigidbody.AddRelativeForce(magnitudeX * Vector2.right);
                 _rigidbody.AddRelativeForce(magnitudeY * Vector2.up);
-            };
+            },
+            () =>
+            {
+                pidX.Ready(p, i, d);
+                pidY.Ready(p, i, d);
+            }
+            );
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
@@ -111,6 +110,44 @@ namespace Assets.Scripts.Birds
                     key: BirdSignal.FoundFood,
                     value: collision));
             }
+        }
+
+        private void ProduceCash()
+        {
+            var timeStep = 30.0f;
+            var sToHz = timeStep.GetSToHzHandler();
+            var timeOutHz = sToHz(Range(55.0f, 65.0f));
+            var coinManager = Global.GameObjects.GetGameObject(Global.CASH_MANAGER_TAG);
+
+            IEnumerator produceCash(CancellationToken token)
+            {
+                var silverCoin = CoinPrefabs[0];
+                var goldCoin = CoinPrefabs[1];
+                var currentCoin = silverCoin;
+                var time = 0;
+                while (true)
+                {
+                    if (token.IsCancellationRequested) break;
+                    yield return new WaitForSeconds(timeStep);
+
+                    var coin = Instantiate(
+                        original: currentCoin,
+                        position: transform.position,
+                        rotation: Quaternion.identity,
+                        parent: coinManager.transform);
+
+                    if (++time >= timeOutHz
+                        && currentCoin == silverCoin
+                        && _context.State.ID == BirdEnum.Idling)
+                    {
+                        _context.Data.Channel.Enqueue((BirdSignal.Grown, null));
+                        currentCoin = goldCoin;
+                        timeStep = 45.0f;
+                    }
+                }
+            }
+
+            StartCoroutine(produceCash(_cancelSource.Token));
         }
     }
 }

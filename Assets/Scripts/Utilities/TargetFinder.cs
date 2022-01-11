@@ -19,7 +19,7 @@ namespace Assets.Scripts.Utilities
 
         public (Transform, Vector3) GetHighestPriorityTarget(Vector3 currentPosition)
         {
-            if (_targets is null
+            if (_targets == null
                 || _targets.Count == 0)
             {
                 return _randomPath.GetHighestPriorityTarget(currentPosition);
@@ -29,6 +29,7 @@ namespace Assets.Scripts.Utilities
             Transform nearestTransform = null;
             foreach (var target in _targets)
             {
+                if (target == null) continue;
                 var distance = (target.position - currentPosition).sqrMagnitude;
                 if (distance < minDistance)
                 {

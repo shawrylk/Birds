@@ -9,12 +9,15 @@ namespace Assets.Scripts.Utilities
 {
     public static class Global
     {
-        public const string FOODS_TAG = "Foods";
+        public const string FOOD_MANAGER_TAG = "FoodManager";
         public const string FOOD_TAG = "Food";
         public const string BOUNDARIES_TAG = "Boundaries";
         public const string BOUNDARY_TAG = "Boundary";
-        public const string BIRDS_TAG= "Birds";
+        public const string BIRD_MANAGER_TAG= "BirdManager";
         public const string BIRD_TAG = "Bird";
+        public const string CASH_MANAGER_TAG= "CashManager";
+        public const string CASH_TAG = "Cash";
+        public const string SCORE_TAG = "Score";
 
         public const string LEFT_BOUNDARY = "left";
         public const string RIGHT_BOUNDARY = "right";
@@ -26,9 +29,15 @@ namespace Assets.Scripts.Utilities
         public const int PIXEL_PER_UNIT = 100;
 
         public static Dictionary<string, GameObject> GameObjects = new Dictionary<string, GameObject>();
-        public static Dictionary<object, object> Items = new Dictionary<object, object>();
+        public static Dictionary<string, object> Items = new Dictionary<string, object>();
 
         public static readonly float UnitsPerPixel;
+
+        public const int LEVEL_MANAGER_ORDER = -100;
+        public const int BOUNDARIES_ORDER = -90;
+        public const int BIRD_MANAGER_ORDER = -80;
+        public const int CASH_MANAGER_ORDER = -70;
+        public const int FOOD_MANAGER_ORDER = -60;
         static Global()
         {
             GameObjects.Clear();

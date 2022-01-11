@@ -4,13 +4,16 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Foods
   - Boundaries
-  - Birds
   - UI
   - Bird
   - Food
   - Boundary
+  - FoodManager
+  - CashManager
+  - BirdManager
+  - Cash
+  - Score
   layers:
   - Default
   - TransparentFX
@@ -19,7 +22,7 @@ TagManager:
   - Water
   - UI
   - Food
-  - 
+  - Cash
   - 
   - 
   - 
