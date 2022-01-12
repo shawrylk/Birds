@@ -18,12 +18,15 @@ namespace Assets.Scripts.Birds
     public partial class Bird : BaseScript
     {
         public GameObject[] CoinPrefabs;
+        public int Price = 100;
+        public float EnergyConsumePerSecond = 10;
 
         private Rigidbody2D _rigidbody = null;
         private SpriteRenderer _sprite = null;
         private BirdContext _context = null;
         private Animator _animator = null;
         private Collider2D _collider = null;
+
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
@@ -114,9 +117,9 @@ namespace Assets.Scripts.Birds
 
         private void ProduceCash()
         {
-            var timeStep = 30.0f;
+            var timeStep = 25.0f;
             var sToHz = timeStep.GetSToHzHandler();
-            var timeOutHz = sToHz(Range(55.0f, 65.0f));
+            var timeOutHz = sToHz(Range(75.0f, 95.0f));
             var coinManager = Global.GameObjects.GetGameObject(Global.CASH_MANAGER_TAG);
 
             IEnumerator produceCash(CancellationToken token)
@@ -128,7 +131,7 @@ namespace Assets.Scripts.Birds
                 while (true)
                 {
                     if (token.IsCancellationRequested) break;
-                    yield return new WaitForSeconds(timeStep);
+                    yield return new WaitForSeconds(timeStep + Range(-5f, 5f));
 
                     var coin = Instantiate(
                         original: currentCoin,
@@ -142,7 +145,7 @@ namespace Assets.Scripts.Birds
                     {
                         _context.Data.Channel.Enqueue((BirdSignal.Grown, null));
                         currentCoin = goldCoin;
-                        timeStep = 45.0f;
+                        EnergyConsumePerSecond *= 1.5f;
                     }
                 }
             }

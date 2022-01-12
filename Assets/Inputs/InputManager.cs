@@ -3,19 +3,22 @@ using Assets.Scripts.Utilities;
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
 
 public class InputContext
 {
-    public InputAction.CallbackContext Context { get; set; }
-    public TouchControls.TouchActions TouchActions { get; set; }
-    public Vector2 Position { get => TouchActions.TouchPosition?.ReadValue<Vector2>() ?? new Vector2(); }
+    //public InputAction.CallbackContext Context { get; set; }
+    //public TouchControls.TouchActions TouchActions { get; set; }
+    public Vector2 ScreenPosition { get; set; }
     public bool Handled { get; set; } = false;
 }
 [DefaultExecutionOrder(-1)]
 public class InputManager : LifeTimeBase.SingletonScript<InputManager>, IInputManager
 {
+    private Action<Finger> startTouchHandler;
+    private Action<Finger> endTouchHandler;
     private TouchControls _touchControls;
     private object _eventLock = new object();
 
@@ -37,38 +40,65 @@ public class InputManager : LifeTimeBase.SingletonScript<InputManager>, IInputMa
     }
     private void Start()
     {
-        var (startTouchHandler, endTouchHandler) = GetTouchHandlers();
-        _touchControls.Touch.TouchPress.started += startTouchHandler;
-        _touchControls.Touch.TouchPress.canceled += endTouchHandler;
+        (startTouchHandler, endTouchHandler) = GetTouchHandlers();
+        //_touchControls.Touch.TouchPress.started += startTouchHandler;
+        //_touchControls.Touch.TouchPress.canceled += endTouchHandler;
+
+    }
+    private bool _isPointerOverUI = false;
+
+    private void Update()
+    {
+        foreach (var touch in UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches)
+        {
+            _isPointerOverUI = EventSystem.current.IsPointerOverGameObject();
+
+            if (touch.phase == UnityEngine.InputSystem.TouchPhase.Began)
+            {
+                startTouchHandler?.Invoke(touch.finger);
+            }
+            else if (touch.phase == UnityEngine.InputSystem.TouchPhase.Ended)
+            {
+                endTouchHandler?.Invoke(touch.finger);
+            }
+        }
     }
 
     private void OnEnable()
     {
+        EnhancedTouchSupport.Enable();
         _touchControls.Enable();
+        //UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerDown += startTouchHandler;
+        //UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerDown += endTouchHandler;
     }
 
     private void OnDisable()
     {
+        EnhancedTouchSupport.Disable();
         _touchControls.Disable();
+        //UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerDown -= startTouchHandler;
+        //UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerDown -= endTouchHandler;
     }
 
-    private (Action<InputAction.CallbackContext> startTouchHandler, Action<InputAction.CallbackContext> endTouchHandler) GetTouchHandlers()
+    private (Action<Finger> startTouchHandler, Action<Finger> endTouchHandler) GetTouchHandlers()
     {
         bool firstTouch = true;
 
-        void invokeHandler(InputAction.CallbackContext context, Action<InputContext> action)
+        void invokeHandler(Finger finger, Action<InputContext> action)
         {
             var param = new InputContext
             {
-                Context = context,
-                TouchActions = _touchControls.Touch,
+                //Context = context,
+                //TouchActions = _touchControls.Touch,
+                ScreenPosition = finger.screenPosition,
                 Handled = false
             };
 
             lock (_eventLock)
             {
                 var list = action?.GetInvocationList();
-                if (list is null) return;
+                if (list is null
+                    || _isPointerOverUI) return;
                 foreach (Action<InputContext> handler in list)
                 {
                     handler.Invoke(param);
@@ -77,13 +107,13 @@ public class InputManager : LifeTimeBase.SingletonScript<InputManager>, IInputMa
             }
         }
 
-        IEnumerator touchCoroutine(InputAction.CallbackContext context)
+        IEnumerator touchCoroutine(Finger context)
         {
             yield return new WaitForEndOfFrame();
             invokeHandler(context, onStartTouch);
         }
 
-        Action<InputAction.CallbackContext> startTouchHandler = context =>
+        Action<Finger> startTouchHandler = context =>
         {
             if (firstTouch)
             {
@@ -96,7 +126,7 @@ public class InputManager : LifeTimeBase.SingletonScript<InputManager>, IInputMa
             }
         };
 
-        Action<InputAction.CallbackContext> endTouchHandler = context =>
+        Action<Finger> endTouchHandler = context =>
         {
             invokeHandler(context, onEndTouch);
         };

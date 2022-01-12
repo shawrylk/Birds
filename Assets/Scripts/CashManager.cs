@@ -29,7 +29,7 @@ namespace Assets.Scripts
 
         private void Touch(InputContext input)
         {
-            var position = input.Position.ToWorldCoord();
+            var position = input.ScreenPosition.ToWorldCoord();
             var hits = Physics2D.CircleCastAll(position, castThickness, Vector2.zero);
             if (hits != null)
             {

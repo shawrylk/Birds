@@ -13,6 +13,8 @@ namespace Assets.Scripts
     {
         private Rigidbody2D _rigidbody;
         public int Price = 10;
+        public int UpgradePrice = 1000;
+        public int Energy = 200;
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
@@ -21,7 +23,8 @@ namespace Assets.Scripts
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.gameObject.CompareTag(Global.BOUNDARY_TAG))
+            if (collision.gameObject.CompareTag(Global.BOUNDARY_TAG)
+                && collision.gameObject.name.ToLower() == Global.BOTTOM_BOUNDARY)
             {
                 Destroy(gameObject, 0.1f);
             }

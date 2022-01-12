@@ -31,7 +31,7 @@ public partial class @TouchControls : IInputActionCollection2, IDisposable
                     ""name"": ""TouchInput"",
                     ""type"": ""PassThrough"",
                     ""id"": ""4b07468a-dec5-4ab7-95f7-e148b4f07159"",
-                    ""expectedControlType"": """",
+                    ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false

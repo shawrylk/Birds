@@ -18,6 +18,7 @@ namespace Assets.Scripts.Utilities
         public const string CASH_MANAGER_TAG= "CashManager";
         public const string CASH_TAG = "Cash";
         public const string SCORE_TAG = "Score";
+        public const string UI_TAG= "UI";
 
         public const string LEFT_BOUNDARY = "left";
         public const string RIGHT_BOUNDARY = "right";
@@ -33,11 +34,12 @@ namespace Assets.Scripts.Utilities
 
         public static readonly float UnitsPerPixel;
 
-        public const int LEVEL_MANAGER_ORDER = -100;
-        public const int BOUNDARIES_ORDER = -90;
-        public const int BIRD_MANAGER_ORDER = -80;
-        public const int CASH_MANAGER_ORDER = -70;
-        public const int FOOD_MANAGER_ORDER = -60;
+        public const int LEVEL_MANAGER_ORDER = 00;
+        public const int BOUNDARIES_ORDER = 1;
+        public const int BIRD_MANAGER_ORDER = 2;
+        public const int CASH_MANAGER_ORDER = 3;
+        public const int FOOD_MANAGER_ORDER = 4;
+        public const int ENEMY_MANAGER_ORDER = 5;
         static Global()
         {
             GameObjects.Clear();

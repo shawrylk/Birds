@@ -66,41 +66,46 @@ namespace Assets.Scripts.Birds
             Func<Context, IEnumerator> HandleIdlingState()
             {
                 var positionHandler = GetPositionResolverHandler();
-                var (pidHandler, resetPid) = GetPidHandler(0.1f, 0f, 0.5f, -2.5f, 2.5f);
+                var (pidHandler, resetPid) = GetPidHandler(0.1f, 0f, 0.5f, -3.5f, 3.5f);
                 var targetFinder = new RandomPathGenerator();
-                var timeStep = 0.02f;
+                var timeStep = 0.1f;
                 var sToHz = timeStep.GetSToHzHandler();
                 var timeOutHz = sToHz(Range(12, 15));
                 IEnumerator idlingHandler(Context context)
                 {
                     var birdContext = context as BirdContext;
                     if (birdContext is null) yield return null;
-                    var time = 1;
-                    resetPid();
+                    var time = 0;
                     //print($"{birdContext.State.ID}");
                     while (true)
                     {
-                        yield return new WaitForSeconds(timeStep);
-
                         if (birdContext.Data.Channel.TryDequeue(out var result))
                         {
                             if (!isGrown
                                 && result.key == BirdSignal.Grown)
                             {
                                 transform.localScale = new Vector3(
-                                    transform.localScale.x * 1.5f,
-                                    transform.localScale.y * 1.5f,
+                                    transform.localScale.x * 1.3f,
+                                    transform.localScale.y * 1.3f,
                                     transform.localScale.z);
+                            }
+                            else if (result.key == BirdSignal.EnergyRegen)
+                            {
+                                var Energytime = Convert.ToInt32(result.value) / EnergyConsumePerSecond;
+                                timeOutHz = sToHz(Energytime);
                             }
                         }
 
                         var position = positionHandler(targetFinder);
                         pidHandler(position, timeStep);
+
                         if (++time >= timeOutHz)
                         {
                             birdContext.State = huntingState;
                             break;
                         }
+
+                        yield return new WaitForSeconds(timeStep);
                     }
                 }
                 return idlingHandler;
@@ -114,13 +119,13 @@ namespace Assets.Scripts.Birds
                 var positionHandler = GetPositionResolverHandler();
                 var (pidHandler, resetPid) = GetPidHandler(10f, 4f, 11f, -5f, 5f);
                 var targetFinder = new TargetFinder();
+
                 IEnumerator huntingHandler(Context context)
                 {
                     var birdContext = context as BirdContext;
                     if (birdContext is null) yield return null;
                     var time = 0;
                     var grayScale = 0.0f;
-                    resetPid();
                     //print($"{birdContext.State.ID}");
                     while (true)
                     {
@@ -132,8 +137,12 @@ namespace Assets.Scripts.Birds
                                 && result.value is Collider2D c
                                 && c != null)
                             {
+                                var energy = c.gameObject.GetComponent<Food>().Energy;
+                                _context.Data.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
+
                                 birdContext.State = idlingState;
                                 _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
+
                                 Destroy(c.gameObject, 0.1f);
                                 break;
                             }
