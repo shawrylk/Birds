@@ -66,7 +66,7 @@ namespace Assets.Scripts.Birds
             Func<Context, IEnumerator> HandleIdlingState()
             {
                 var positionHandler = GetPositionResolverHandler();
-                var (pidHandler, resetPid) = GetPidHandler(0.1f, 0f, 0.5f, -3.5f, 3.5f);
+                var (pidHandler, resetPid) = transform.GetPidHandler(0.1f, 0f, 0.5f, -3.5f, 3.5f, _rigidbody);
                 var targetFinder = new RandomPathGenerator();
                 var timeStep = 0.1f;
                 var sToHz = timeStep.GetSToHzHandler();
@@ -117,7 +117,7 @@ namespace Assets.Scripts.Birds
                 var timeOutHz1 = sToHz(Range(5, 7));
                 var timeOutHz2 = timeOutHz1 + sToHz(Range(15, 17));
                 var positionHandler = GetPositionResolverHandler();
-                var (pidHandler, resetPid) = GetPidHandler(10f, 4f, 11f, -5f, 5f);
+                var (pidHandler, resetPid) = transform.GetPidHandler(10f, 4f, 11f, -5f, 5f, _rigidbody);
                 var targetFinder = new TargetFinder();
 
                 IEnumerator huntingHandler(Context context)

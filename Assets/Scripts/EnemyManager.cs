@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.Utilities;
+﻿using Assets.Contracts;
+using Assets.Scripts.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,15 +14,39 @@ namespace Assets.Scripts
     public class EnemyManager : BaseScript
     {
         public GameObject[] EnemyPrefabs;
+        public GameObject DangerSign;
+
         private int _enemy_count_max;
+        private IInputManager _input;
         private Dictionary<string, Transform> _boundaries;
+
+        private event Action<InputContext> _touchEvent;
+        public event Action<InputContext> TouchEvent
+        {
+            add => _touchEvent += value;
+            remove => _touchEvent -= value;
+        }
 
         private void Awake()
         {
             _boundaries = Global.Items[Global.BOUNDARIES_TAG] as Dictionary<string, Transform>;
             _enemy_count_max = EnemyPrefabs.Length;
-            //StartAutoSpawnEnemy();
+            _input = InputManager.Instance;
+            _input.OnStartTouch += TouchHandler;
+
+            StartAutoSpawnEnemy();
         }
+
+        private void OnDisable()
+        {
+            _input.OnStartTouch -= TouchHandler;
+        }
+
+        private void TouchHandler(InputContext obj)
+        {
+            _touchEvent?.Invoke(obj);
+        }
+
         private void StartAutoSpawnEnemy()
         {
             StartCoroutine(SpawnEnemy());
@@ -37,13 +62,25 @@ namespace Assets.Scripts
             var top = _boundaries[Global.TOP_BOUNDARY].position - verticalMargin - new Vector3(0, heightInUnit / 2, 0);
             var bottom = _boundaries[Global.BOTTOM_BOUNDARY].position + verticalMargin;
 
-            var time = 120.0f;
+            var timeStep1 = UnityEngine.Random.Range(120f, 150f);
+            var timeStep2 = 2.0f;
             while (true)
             {
-                yield return new WaitForSeconds(time);
+                yield return new WaitForSeconds(timeStep1);
+
                 var position = new Vector2(left.Range(right).x, top.Range(bottom).y);
-                var enemy =
-                    Instantiate(original: GetEnemyAtIndex(0),
+
+                var danger = Instantiate(original: DangerSign,
+                    position: position,
+                    rotation: Quaternion.identity,
+                    parent: transform);
+
+                danger.GetComponent<DangerSign.DangerSign>()
+                    .StartWarningCoroutine(timeStep2);
+
+                yield return new WaitForSeconds(timeStep2);
+
+                Instantiate(original: GetEnemyAtIndex(0),
                     position: position,
                     rotation: Quaternion.identity,
                     parent: transform);

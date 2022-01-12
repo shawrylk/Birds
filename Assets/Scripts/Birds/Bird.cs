@@ -59,7 +59,6 @@ namespace Assets.Scripts.Birds
         {
             var foodManager = Global.GameObjects.GetGameObject(Global.FOOD_MANAGER_TAG);
 
-
             return (targetFinder) =>
             {
                 var targets = foodManager
@@ -75,34 +74,6 @@ namespace Assets.Scripts.Birds
 
                 return targetPosition;
             };
-        }
-        private (Action<Vector3, float> pid, Action reset) GetPidHandler(float p, float i, float d, float minClamp = 3f, float maxClamp = 3f)
-        {
-            IPidController pidX = new PidController();
-            IPidController pidY = new PidController();
-
-            pidX.Ready(p, i, d);
-            pidY.Ready(p, i, d);
-
-            return ((targetPosition, timeStep) =>
-            {
-                var distanceVector = targetPosition - transform.position;
-
-                var magnitudeX = pidX.GetOutputValue(distanceVector.x, timeStep);
-                var magnitudeY = pidY.GetOutputValue(distanceVector.y, timeStep);
-
-                magnitudeX = Mathf.Clamp(magnitudeX, minClamp, maxClamp);
-                magnitudeY = Mathf.Clamp(magnitudeY, minClamp, maxClamp);
-
-                _rigidbody.AddRelativeForce(magnitudeX * Vector2.right);
-                _rigidbody.AddRelativeForce(magnitudeY * Vector2.up);
-            },
-            () =>
-            {
-                pidX.Ready(p, i, d);
-                pidY.Ready(p, i, d);
-            }
-            );
         }
 
         private void OnTriggerEnter2D(Collider2D collision)

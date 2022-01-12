@@ -24,7 +24,10 @@ namespace Assets.Scripts
 
         private void OnDisable()
         {
-            _input.OnEndTouch -= Touch;
+            if (_input != null)
+            {
+                _input.OnStartTouch -= Touch;
+            }
         }
 
         private void Touch(InputContext input)
