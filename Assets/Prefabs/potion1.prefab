@@ -164,6 +164,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a92b5978ff12044f8470dcdb8356994, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Price: 50
-  UpgradePrice: 2500
-  Energy: 600
+  Price: 5
+  UpgradePrice: 200
+  Energy: 185

@@ -29,7 +29,7 @@ namespace Assets.Scripts
         public TextMeshProUGUI ScoreTMP;
 
         public int FoodIndex = 0;
-        public int FoodCount = 2;
+        public int FoodCount = 1;
         private void Awake()
         {
             _input = InputManager.Instance;
@@ -75,11 +75,11 @@ namespace Assets.Scripts
         {
             if (FoodCount < MAX_FOOD_COUNT
                 && int.TryParse(ScoreTMP.text, out int score)
-                && score >= 500)
+                && score >= 300)
             {
                 FoodCount++;
-                ScoreTMP.text = (score - 500).ToString();
-                UpgradeFoodCountTMP.text = $"Food Count: {FoodCount}\n Price: 500";
+                ScoreTMP.text = (score - 300).ToString();
+                UpgradeFoodCountTMP.text = $"Food Count: {FoodCount}\n Price: 300";
 
 
                 if (FoodCount == MAX_FOOD_COUNT)

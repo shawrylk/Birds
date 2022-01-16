@@ -10,17 +10,17 @@ namespace Assets.Scripts.Utilities
 {
     public class TargetFinder : ITargetFinder
     {
-        private IList<Transform> _targets;
+        private IEnumerable<Transform> _targets;
         private ITargetFinder _randomPath = new RandomPathGenerator();
-        public void UpdateTargets(IList<Transform> targets)
+        public void UpdateTargets(IEnumerable<Transform> targets)
         {
             _targets = targets;
         }
 
-        public (Transform, Vector3) GetHighestPriorityTarget(Vector3 currentPosition)
+        public (Transform, Vector3) GetHighestPriorityTarget(Transform currentPosition)
         {
             if (_targets == null
-                || _targets.Count == 0)
+                || _targets.Count() == 0)
             {
                 return _randomPath.GetHighestPriorityTarget(currentPosition);
             }
@@ -30,7 +30,7 @@ namespace Assets.Scripts.Utilities
             foreach (var target in _targets)
             {
                 if (target == null) continue;
-                var distance = (target.position - currentPosition).sqrMagnitude;
+                var distance = (target.position - currentPosition.position).sqrMagnitude;
                 if (distance < minDistance)
                 {
                     minDistance = distance;

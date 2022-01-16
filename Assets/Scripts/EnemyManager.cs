@@ -62,7 +62,7 @@ namespace Assets.Scripts
             var top = _boundaries[Global.TOP_BOUNDARY].position - verticalMargin - new Vector3(0, heightInUnit / 2, 0);
             var bottom = _boundaries[Global.BOTTOM_BOUNDARY].position + verticalMargin;
 
-            var timeStep1 = UnityEngine.Random.Range(120f, 150f);
+            var timeStep1 = UnityEngine.Random.Range(60f, 70f);
             var timeStep2 = 2.0f;
             while (true)
             {

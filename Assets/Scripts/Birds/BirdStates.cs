@@ -19,7 +19,6 @@ namespace Assets.Scripts.Birds
             BirdContextState huntingState = null;
             BirdContextState starvingState = null;
             BirdContextState deathState = null;
-            bool isGrown = false;
             #endregion
             #region Local Functions
             BirdContextState GetIdlingState()
@@ -66,23 +65,69 @@ namespace Assets.Scripts.Birds
             Func<Context, IEnumerator> HandleIdlingState()
             {
                 var positionHandler = GetPositionResolverHandler();
-                var (pidHandler, resetPid) = transform.GetPidHandler(0.1f, 0f, 0.5f, -3.5f, 3.5f, _rigidbody);
-                var targetFinder = new RandomPathGenerator();
+                var (pidHandler, resetPid) = transform.GetPidHandler(10f, 10f, 11f, -7f, 7f, _rigidbody);
+
+                //var treeSlotFinder = new TreeFinder();
+                //treeSlotFinder.UpdateTargets(Trees);
+
+                var randomTargetGenerator = new RandomPathGenerator();
+                randomTargetGenerator.UpdateTargets(null);
+
                 var timeStep = 0.1f;
                 var sToHz = timeStep.GetSToHzHandler();
-                var timeOutHz = sToHz(Range(12, 15));
+                var timeOutHz = sToHz(Range(5, 7));
+
                 IEnumerator idlingHandler(Context context)
                 {
                     var birdContext = context as BirdContext;
                     if (birdContext is null) yield return null;
+
                     var time = 0;
-                    //print($"{birdContext.State.ID}");
+
+                    Func<(Func<Vector3>, Action<Vector3>)> selector = () =>
+                    {
+                        var num = Range(0, 2);
+                        Func<Vector3> tempPositionHandler = null;
+                        Action<Vector3> tempLateProcessHandler = null;
+
+                        switch (num)
+                        {
+                            case 0: // tree slot
+                                    //var position = positionHandler(treeSlotFinder);
+                                    //tempPositionHandler = () => position;
+                                    //tempLateProcessHandler = (p) =>
+                                    //{
+                                    //    if (Math.Round((p - position).sqrMagnitude, 2) <= 0.001
+                                    //    && _animator.isActiveAndEnabled)
+                                    //    {
+                                    //        _rigidbody.velocity = Vector2.zero;
+                                    //        _animator.enabled = false;
+                                    //    }
+                                    //    else
+                                    //    {
+                                    //        print("fuck");
+                                    //    }
+                                    //};
+                                    //return (tempPositionHandler, tempLateProcessHandler);
+                            default: // random
+                                return (() => positionHandler(randomTargetGenerator), tempLateProcessHandler);
+                        }
+                    };
+
+                    var (tempPositionHandler, lateProcessHandler) = selector();
+
                     while (true)
                     {
                         if (birdContext.Data.Channel.TryDequeue(out var result))
                         {
-                            if (!isGrown
-                                && result.key == BirdSignal.Grown)
+                            if (result.key == BirdSignal.GrownStage1)
+                            {
+                                transform.localScale = new Vector3(
+                                    transform.localScale.x * 1.3f,
+                                    transform.localScale.y * 1.3f,
+                                    transform.localScale.z);
+                            }
+                            else if (result.key == BirdSignal.GrownStage2)
                             {
                                 transform.localScale = new Vector3(
                                     transform.localScale.x * 1.3f,
@@ -96,8 +141,19 @@ namespace Assets.Scripts.Birds
                             }
                         }
 
-                        var position = positionHandler(targetFinder);
+                        var position = tempPositionHandler();
                         pidHandler(position, timeStep);
+
+                        if (_rigidbody.velocity.sqrMagnitude > 3.0f)
+                        {
+                            _animator.Play("bird_1_fly_fast");
+                        }
+                        else
+                        {
+                            _animator.Play("fly");
+                        }
+
+                        lateProcessHandler?.Invoke(transform.position);
 
                         if (++time >= timeOutHz)
                         {
@@ -114,19 +170,20 @@ namespace Assets.Scripts.Birds
             {
                 var timeStep = 0.1f;
                 var sToHz = timeStep.GetSToHzHandler();
-                var timeOutHz1 = sToHz(Range(5, 7));
-                var timeOutHz2 = timeOutHz1 + sToHz(Range(15, 17));
+                var timeOutHz = sToHz(Range(7, 10));
                 var positionHandler = GetPositionResolverHandler();
-                var (pidHandler, resetPid) = transform.GetPidHandler(10f, 4f, 11f, -5f, 5f, _rigidbody);
+                var (pidHandler, resetPid) = transform.GetPidHandler(10f, 10f, 11f, -7f, 7f, _rigidbody);
                 var targetFinder = new TargetFinder();
+
 
                 IEnumerator huntingHandler(Context context)
                 {
                     var birdContext = context as BirdContext;
                     if (birdContext is null) yield return null;
                     var time = 0;
-                    var grayScale = 0.0f;
-                    //print($"{birdContext.State.ID}");
+
+                    _animator.enabled = true;
+
                     while (true)
                     {
                         yield return new WaitForSeconds(timeStep);
@@ -147,19 +204,30 @@ namespace Assets.Scripts.Birds
                                 break;
                             }
                         }
+                        var foodManager = Global.GameObjects.GetGameObject(Global.FOOD_MANAGER_TAG);
 
+                        var targets = foodManager
+                            .GetComponentsInChildren<Transform>()
+                            .Skip(Global.PARENT_TRANSFORM)
+                            .ToList();
+
+                        targetFinder.UpdateTargets(targets);
                         var position = positionHandler(targetFinder);
                         pidHandler(position, timeStep);
 
-                        if (++time >= timeOutHz2)
+                        if (_rigidbody.velocity.sqrMagnitude > 3.0f)
                         {
-                            birdContext.State = deathState;
-                            break;
+                            _animator.Play("bird_1_fly_fast");
                         }
-                        else if (time >= timeOutHz1)
+                        else
                         {
-                            if (grayScale < 1) grayScale += 0.03f;
-                            _sprite.material.SetFloat("_GrayscaleAmount", grayScale);
+                            _animator.Play("fly");
+                        }
+
+                        if (time++ >= timeOutHz)
+                        {
+                            _context.State = starvingState;
+                            break;
                         }
                     }
                 }
@@ -169,15 +237,63 @@ namespace Assets.Scripts.Birds
             Func<Context, IEnumerator> HandleStarvingState()
             {
                 var timeStep = 0.1f;
+                var sToHz = timeStep.GetSToHzHandler();
+                var timeOutHz = sToHz(Range(7, 10));
+                var positionHandler = GetPositionResolverHandler();
+                var (pidHandler, resetPid) = transform.GetPidHandler(10f, 10f, 11f, -9f, 9f, _rigidbody);
+                var targetFinder = new TargetFinder();
+
+
                 IEnumerator starvingHandler(Context context)
                 {
                     var birdContext = context as BirdContext;
                     if (birdContext is null) yield return null;
-                    //print($"{birdContext.State.ID}");
+                    var time = 0;
+                    var grayScale = 0.0f;
+
+                    _animator.enabled = true;
+
+                    _animator.Play("bird_1_starving");
 
                     while (true)
                     {
                         yield return new WaitForSeconds(timeStep);
+
+                        if (birdContext.Data.Channel.TryDequeue(out var result))
+                        {
+                            if (result.key == BirdSignal.FoundFood
+                                && result.value is Collider2D c
+                                && c != null)
+                            {
+                                var energy = c.gameObject.GetComponent<Food>().Energy;
+                                _context.Data.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
+
+                                birdContext.State = idlingState;
+                                _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
+
+                                Destroy(c.gameObject, 0.1f);
+                                break;
+                            }
+                        }
+                        var foodManager = Global.GameObjects.GetGameObject(Global.FOOD_MANAGER_TAG);
+
+                        var targets = foodManager
+                            .GetComponentsInChildren<Transform>()
+                            .Skip(Global.PARENT_TRANSFORM)
+                            .ToList();
+
+                        targetFinder.UpdateTargets(targets);
+                        var position = positionHandler(targetFinder);
+                        pidHandler(position, timeStep);
+
+                        if (grayScale < 1) grayScale += 0.03f;
+                        _sprite.material.SetFloat("_GrayscaleAmount", grayScale);
+
+                        if (time++ >= timeOutHz)
+                        {
+                            _context.State = deathState;
+                            break;
+                        }
                     }
                 }
                 return starvingHandler;

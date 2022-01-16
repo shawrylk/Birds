@@ -138,6 +138,9 @@ MonoBehaviour:
   CoinPrefabs:
   - {fileID: 7078499240789614524, guid: 241d858e35649914eac6b86c0c717243, type: 3}
   - {fileID: 5203285797296096655, guid: bd87fca1dc2d35f4a89eb915045b6406, type: 3}
+  Trees:
+  - {fileID: 941792809944389102, guid: e9c4c33d169d55a4ebd4965ee1e9043e, type: 3}
+  - {fileID: 4792703020340650148, guid: 711a2f0ea9b83b244a27059e449754d4, type: 3}
   Price: 300
   EnergyConsumePerSecond: 15
 --- !u!95 &3270993778013841656

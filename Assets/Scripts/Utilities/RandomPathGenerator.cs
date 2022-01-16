@@ -12,12 +12,12 @@ namespace Assets.Scripts.Utilities
     {
         private const float unit = 2;
 
-        public (Transform transform, Vector3 position) GetHighestPriorityTarget(Vector3 currentPosition)
+        public (Transform transform, Vector3 position) GetHighestPriorityTarget(Transform currentPosition)
         {
-            return (null, currentPosition + new Vector3(-unit, -unit).Range(new Vector3(unit, unit)));
+            return (null, currentPosition.position + new Vector3(-unit, -unit).Range(new Vector3(unit, unit)));
         }
 
-        public void UpdateTargets(IList<Transform> targets)
+        public void UpdateTargets(IEnumerable<Transform> targets)
         {
         }
     }

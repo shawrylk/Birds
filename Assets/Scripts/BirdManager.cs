@@ -14,7 +14,7 @@ public class BirdManager : BaseScript
 {
     public GameObject[] BirdPrefabs;
     public TextMeshProUGUI ScoreTMP;
-    public int DefaultBirdCount = 1;
+    public int DefaultBirdCount = 2;
     private Dictionary<string, Transform> _boundaries;
     private Action<int> _spawnBird;
     private int _bird_last_index;

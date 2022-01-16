@@ -55,7 +55,7 @@ namespace Assets.Scripts.Enemy
             var timeStep2 = 0.1f;
             var sToHz = timeStep2.GetSToHzHandler();
             var hzOut = sToHz(timeStep);
-            var (pidHandler, resetPid) = transform.GetPidHandler(10f, 3f, 11f, -3.5f, 3.5f, _rigidbody);
+            var (pidHandler, resetPid) = transform.GetPidHandler(30f, 3f, 21f, -7f, 7f, _rigidbody);
             var target = default(Collider2D);
             var birdMask = LayerMask.GetMask(Global.BIRDS_MARK_LAYER);
             var randomPath = new RandomPathGenerator() as ITargetFinder;
@@ -80,7 +80,7 @@ namespace Assets.Scripts.Enemy
                     }
                     else
                     {
-                        (_, position) = randomPath.GetHighestPriorityTarget(transform.position);
+                        (_, position) = randomPath.GetHighestPriorityTarget(transform);
                     }
 
                     pidHandler(position, timeStep2);
@@ -108,7 +108,7 @@ namespace Assets.Scripts.Enemy
                         && hit.transform == transform)
                     {
                         var direction = ((Vector2)transform.position - hit.point).normalized;
-                        _rigidbody.AddForce(direction * 20);
+                        _rigidbody.AddForce(direction * 5);
 
                         Health -= 3f;
 

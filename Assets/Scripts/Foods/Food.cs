@@ -18,7 +18,7 @@ namespace Assets.Scripts
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
-            _rigidbody.velocity = new Vector2(0, -0.5f);
+            _rigidbody.velocity = new Vector2(0, -1f);
         }
 
         private void OnTriggerEnter2D(Collider2D collision)

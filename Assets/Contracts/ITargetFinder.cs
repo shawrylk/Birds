@@ -9,7 +9,7 @@ namespace Assets.Contracts
 {
     public interface ITargetFinder
     {
-        void UpdateTargets(IList<Transform> targets);
-        (Transform transform, Vector3 position) GetHighestPriorityTarget(Vector3 currentPosition);
+        void UpdateTargets(IEnumerable<Transform> targets);
+        (Transform transform, Vector3 position) GetHighestPriorityTarget(Transform currentTransform);
     }
 }
