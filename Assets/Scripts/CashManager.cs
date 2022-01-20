@@ -41,15 +41,15 @@ namespace Assets.Scripts
                     if (hit.transform != null
                         && hit.transform.CompareTag(Global.CASH_TAG))
                     {
-                        if (int.TryParse(ScoreTMP.text, out int currentCash))
-                        {
-                            var value = hit.transform.gameObject.GetComponent<Cash>().Value;
-                            Destroy(hit.transform.gameObject);
-                            currentCash += value;
-                            ScoreTMP.text = currentCash.ToString();
-                            input.Handled = true;
-                            break;
-                        }
+                        //if (int.TryParse(ScoreTMP.text, out int currentCash))
+                        //{
+                        var value = hit.transform.gameObject.GetComponent<Cash>().GetValue();
+                        //    Destroy(hit.transform.gameObject, 2f);
+                        //    currentCash += value;
+                        //    ScoreTMP.text = currentCash.ToString();
+                        //}
+                        input.Handled = true;
+                        break;
                     }
                 }
             }

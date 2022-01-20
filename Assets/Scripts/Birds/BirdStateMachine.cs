@@ -36,8 +36,18 @@ namespace Assets.Scripts.Utilities
         public new BirdContextState State
         {
             get => base.State as BirdContextState;
-            set => base.State = value;
+            set
+            {
+                if (base.State != value)
+                {
+                    if (OnStateChanged?.Invoke((State, value)) != true)
+                    {
+                        base.State = value;
+                    }
+                }
+            }
         }
+        public new Func<(BirdContextState oldState, BirdContextState newState), bool> OnStateChanged;
         public BirdContext(MonoBehaviour owner) : base(owner) { }
         public void Run(BirdContextData data, BirdContextState state)
         {

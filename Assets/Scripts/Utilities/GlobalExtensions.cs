@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -84,6 +85,18 @@ namespace Assets.Scripts.Utilities
             }
 
             return go;
+        }
+
+        public static Func<ITargetFinder, Vector3> GetPositionResolverHandler(this Transform transform)
+        {
+            return (targetFinder) =>
+            {
+                var targetPosition = targetFinder
+                    .GetHighestPriorityTarget(transform)
+                    .position;
+
+                return targetPosition;
+            };
         }
     }
 }

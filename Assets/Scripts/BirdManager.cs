@@ -41,7 +41,7 @@ public class BirdManager : BaseScript
         if (int.TryParse(ScoreTMP.text, out int score))
         {
             var bird = GetBirdAtIndex(index);
-            var price = bird.GetComponent<Bird>().Price;
+            var price = bird.GetComponent<BirdBase>().Price;
             if (score >= price)
             {
                 _spawnBird?.Invoke(index);

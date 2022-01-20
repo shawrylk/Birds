@@ -18,7 +18,22 @@ namespace Assets.Scripts.Utilities
     }
     public abstract class Context
     {
-        protected State State { get; set; }
+        public Func<(State oldState, State newState), bool> OnStateChanged;
+        protected State State
+        {
+            get => _state;
+            set
+            {
+                if (_state != value)
+                {
+                    if (OnStateChanged?.Invoke((_state, value)) != true)
+                    {
+                        _state = value;
+                    }
+                }
+            }
+        }
+        private State _state;
         private MonoBehaviour _owner;
         public Context(MonoBehaviour owner)
         {
