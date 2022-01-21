@@ -15,6 +15,9 @@ namespace Assets.Scripts
     {
         public GameObject[] EnemyPrefabs;
         public GameObject DangerSign;
+        [SerializeField]
+        private ParticleSystem _touchFx;
+        private List<ParticleSystem> _touchFxPool = new List<ParticleSystem>();
 
         private int _enemy_count_max;
         private IInputManager _input;
@@ -42,9 +45,23 @@ namespace Assets.Scripts
             _input.OnStartTouch -= TouchHandler;
         }
 
-        private void TouchHandler(InputContext obj)
+        private int index = 0;
+        private void TouchHandler(InputContext input)
         {
-            _touchEvent?.Invoke(obj);
+            _touchEvent?.Invoke(input);
+            if (input.Handled)
+            {
+                if (_touchFxPool.Count <= index)
+                {
+                    _touchFxPool.Add(Instantiate(
+                        _touchFx, 
+                        input.ScreenPosition.ToWorldCoord(), 
+                        Quaternion.identity));
+                }
+                _touchFxPool[index].transform.position = input.ScreenPosition.ToWorldCoord();
+                _touchFxPool[index].Play();
+                index = ++index % 10;
+            }
         }
 
         private void StartAutoSpawnEnemy()
@@ -62,7 +79,7 @@ namespace Assets.Scripts
             var top = _boundaries[Global.TOP_BOUNDARY].position - verticalMargin - new Vector3(0, heightInUnit / 2, 0);
             var bottom = _boundaries[Global.BOTTOM_BOUNDARY].position + verticalMargin;
 
-            var timeStep1 = UnityEngine.Random.Range(60f, 70f);
+            var timeStep1 = UnityEngine.Random.Range(5f, 7f);
             var timeStep2 = 2.0f;
             while (true)
             {

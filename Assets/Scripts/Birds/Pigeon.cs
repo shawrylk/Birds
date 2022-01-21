@@ -31,8 +31,8 @@ namespace Assets.Scripts.Birds
 
         protected override void OnDestroy()
         {
-            base.OnDestroy();
             _birdManager.AllBirds.Remove(gameObject);
+            base.OnDestroy();
         }
         private void ProduceCash()
         {

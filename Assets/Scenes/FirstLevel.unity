@@ -455,9 +455,17 @@ PrefabInstance:
       value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7044278317292685073, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
+      propertyPath: _touchFx
+      value: 
+      objectReference: {fileID: 831074112103462095, guid: 4630547fd63acba4fa8613b2e7eb18fa, type: 3}
+    - target: {fileID: 7044278317292685073, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
       propertyPath: DangerSign
       value: 
       objectReference: {fileID: 4377467273735629112, guid: 95813942c78a2cf48ae8a29e27bc5a10, type: 3}
+    - target: {fileID: 7044278317292685073, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
+      propertyPath: _touchPrefab
+      value: 
+      objectReference: {fileID: 831074112103462093, guid: 4630547fd63acba4fa8613b2e7eb18fa, type: 3}
     - target: {fileID: 7044278317467925392, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
       propertyPath: m_Name
       value: LevelManager

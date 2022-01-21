@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static UnityEngine.Random;
 
 namespace Assets.Scripts.Enemy
 {
@@ -19,7 +20,7 @@ namespace Assets.Scripts.Enemy
         private Collider2D _collider = null;
         private EnemyManager _enemyManager;
         private GameObject _cashManager;
-        private const float castThickness = 0.4f;
+        private const float castThickness = 2f;
         private bool destroyed = false;
 
         public float Health = 100;
@@ -37,7 +38,12 @@ namespace Assets.Scripts.Enemy
             _animator = GetComponent<Animator>();
             _collider = GetComponent<Collider2D>();
 
-            StartFindingBirdCoroutine();
+            FindBird();
+        }
+
+        private void Update()
+        {
+            _sprite.flipX = _rigidbody.velocity.x <= 0;
         }
 
         protected override void OnDestroy()
@@ -45,52 +51,37 @@ namespace Assets.Scripts.Enemy
             _enemyManager.TouchEvent -= TouchHandler;
             base.OnDestroy();
         }
-        private void StartFindingBirdCoroutine()
+        private void FindBird()
         {
-            StartCoroutine(FindBird());
-        }
-        private IEnumerator FindBird()
-        {
-            var timeStep = 1f;
-            var timeStep2 = 0.1f;
-            var sToHz = timeStep2.GetSToHzHandler();
-            var hzOut = sToHz(timeStep);
-            var (pidHandler, resetPid) = transform.GetPidHandler(30f, 3f, 21f, -7f, 7f, _rigidbody);
-            var target = default(Collider2D);
-            var birdMask = LayerMask.GetMask(Global.BIRDS_MARK_LAYER);
-            var randomPath = new RandomPathGenerator() as ITargetFinder;
+            var timeStep = 0.1f;
+            var sToHz = timeStep.GetSToHzHandler();
+            var timeOutHz = sToHz(Range(7, 10));
+            var positionHandler = transform.GetPositionResolverHandler();
+            var (pidHandler, resetPid) = transform.GetPidHandler(20f, 10f, 21f, -10f, 10f, _rigidbody);
+            var targetFinder = new TargetFinder();
 
-            while (true)
+
+            IEnumerator huntingHandler()
             {
-                yield return new WaitForSeconds(timeStep);
-
-                target = Physics2D.OverlapCircle(transform.position, 20f, birdMask);
-
-                var hz = 0;
-
                 while (true)
                 {
-                    yield return new WaitForSeconds(timeStep2);
+                    yield return new WaitForSeconds(timeStep);
 
-                    var position = default(Vector3);
+                    var foodManager = Global.GameObjects.GetGameObject(Global.BIRD_MANAGER_TAG);
 
-                    if (target != null)
-                    {
-                        position = target.transform.position;
-                    }
-                    else
-                    {
-                        (_, position) = randomPath.GetHighestPriorityTarget(transform);
-                    }
+                    var targets = foodManager
+                        .GetComponentsInChildren<Transform>()
+                        .Skip(Global.PARENT_TRANSFORM)
+                        .ToList();
 
-                    pidHandler(position, timeStep2);
+                    targetFinder.UpdateTargets(targets);
+                    var position = positionHandler(targetFinder);
+                    pidHandler(position, timeStep);
 
-                    if (hz++ >= hzOut)
-                    {
-                        break;
-                    }
                 }
             }
+
+            StartCoroutine(huntingHandler());
         }
 
         private void TouchHandler(InputContext input)
@@ -108,7 +99,7 @@ namespace Assets.Scripts.Enemy
                         && hit.transform == transform)
                     {
                         var direction = ((Vector2)transform.position - hit.point).normalized;
-                        _rigidbody.AddForce(direction * 5);
+                        _rigidbody.AddForce(direction * Range(10f, 20f));
 
                         Health -= 3f;
 
@@ -174,12 +165,24 @@ namespace Assets.Scripts.Enemy
                 _cashManager.transform);
         }
 
-        private void OnCollisionEnter2D(Collision2D collision)
+        private void OnTriggerEnter2D(Collider2D collision)
         {
             if (collision != null
                 && collision.transform.CompareTag(Global.BIRD_TAG))
             {
                 Destroy(collision.gameObject);
+            }
+            else if (collision.gameObject.CompareTag(Global.BOUNDARY_TAG))
+            {
+                if (collision.gameObject.name.ToLower() == Global.BOTTOM_BOUNDARY
+                    || collision.gameObject.name.ToLower() == Global.TOP_BOUNDARY)
+                {
+                    _rigidbody.AddForce(new Vector2(1, _rigidbody.velocity.y * -2) * Vector2.up, ForceMode2D.Impulse);
+                }
+                else
+                {
+                    _rigidbody.AddForce(new Vector2(_rigidbody.velocity.x * -2, 1) * Vector2.right, ForceMode2D.Impulse);
+                }
             }
         }
     }
