@@ -20,7 +20,7 @@ namespace Assets.Scripts.Birds
         #endregion
 
         #region Local Functions
-        protected virtual BirdContextState GetIdlingState()
+        BirdContextState GetIdlingState()
         {
             idlingState = new BirdContextState
             {
@@ -30,7 +30,7 @@ namespace Assets.Scripts.Birds
 
             return idlingState;
         }
-        protected virtual BirdContextState GetHuntingStae()
+        BirdContextState GetHuntingStae()
         {
             huntingState = new BirdContextState
             {
@@ -40,7 +40,7 @@ namespace Assets.Scripts.Birds
 
             return huntingState;
         }
-        protected virtual BirdContextState GetStarvingState()
+        BirdContextState GetStarvingState()
         {
             starvingState = new BirdContextState
             {
@@ -51,7 +51,7 @@ namespace Assets.Scripts.Birds
             return starvingState;
         }
 
-        protected virtual BirdContextState GetDeathState()
+        BirdContextState GetDeathState()
         {
             deathState = new BirdContextState
             {
@@ -83,37 +83,69 @@ namespace Assets.Scripts.Birds
 
                 var time = 0;
 
-                Func<(Func<Vector3>, Action<Vector3>)> selector = () =>
+                //Func<(Func<Vector3>, Action<Vector3>)> selector = () =>
+                //{
+                //    var num = Range(0, 2);
+                //    Func<Vector3> tempPositionHandler = null;
+                //    Action<Vector3> tempLateProcessHandler = null;
+
+                //    switch (num)
+                //    {
+                //        case 0: // tree slot
+                //                //var position = positionHandler(treeSlotFinder);
+                //                //tempPositionHandler = () => position;
+                //                //tempLateProcessHandler = (p) =>
+                //                //{
+                //                //    if (Math.Round((p - position).sqrMagnitude, 2) <= 0.001
+                //                //    && _animator.isActiveAndEnabled)
+                //                //    {
+                //                //        _rigidbody.velocity = Vector2.zero;
+                //                //        _animator.enabled = false;
+                //                //    }
+                //                //    else
+                //                //    {
+                //                //        print("fuck");
+                //                //    }
+                //                //};
+                //                //return (tempPositionHandler, tempLateProcessHandler);
+                //        default: // random
+                //            return (() => positionHandler(randomTargetGenerator), tempLateProcessHandler);
+                //    }
+                //};
+
+                //var (tempPositionHandler, lateProcessHandler) = selector();
+
+                Func<Vector3> getRandomPositionHandler(float timeOut)
                 {
-                    var num = Range(0, 2);
-                    Func<Vector3> tempPositionHandler = null;
-                    Action<Vector3> tempLateProcessHandler = null;
-
-                    switch (num)
+                    var hzOut = sToHz(timeOut);
+                    var ret = default(Vector3);
+                    var first = true;
+                    IEnumerable<int> wait()
                     {
-                        case 0: // tree slot
-                                //var position = positionHandler(treeSlotFinder);
-                                //tempPositionHandler = () => position;
-                                //tempLateProcessHandler = (p) =>
-                                //{
-                                //    if (Math.Round((p - position).sqrMagnitude, 2) <= 0.001
-                                //    && _animator.isActiveAndEnabled)
-                                //    {
-                                //        _rigidbody.velocity = Vector2.zero;
-                                //        _animator.enabled = false;
-                                //    }
-                                //    else
-                                //    {
-                                //        print("fuck");
-                                //    }
-                                //};
-                                //return (tempPositionHandler, tempLateProcessHandler);
-                        default: // random
-                            return (() => positionHandler(randomTargetGenerator), tempLateProcessHandler);
+                        while (true)
+                        {
+                            var i = 0;
+                            while (i < hzOut)
+                            {
+                                yield return i++;
+                            }
+                            yield break;
+                        }
                     }
-                };
+                    var it = wait().GetEnumerator();
+                    return () =>
+                    {
+                        if (!it.MoveNext() || first)
+                        {
+                            first = false;
+                            it = wait().GetEnumerator();
+                            ret = positionHandler(randomTargetGenerator);
+                        }
+                        return ret;
+                    };
+                }
 
-                var (tempPositionHandler, lateProcessHandler) = selector();
+                var getRandomPosition = getRandomPositionHandler(Range(1.7f, 2.3f));
 
                 while (true)
                 {
@@ -140,7 +172,7 @@ namespace Assets.Scripts.Birds
                         }
                     }
 
-                    var position = tempPositionHandler();
+                    var position = getRandomPosition();
                     pidHandler(position, timeStep);
 
                     if (_rigidbody.velocity.sqrMagnitude > 3.0f)
@@ -152,7 +184,7 @@ namespace Assets.Scripts.Birds
                         _animator.Play("fly");
                     }
 
-                    lateProcessHandler?.Invoke(transform.position);
+                    //lateProcessHandler?.Invoke(transform.position);
 
                     if (++time >= timeOutHz)
                     {

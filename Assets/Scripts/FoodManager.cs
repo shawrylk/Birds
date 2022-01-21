@@ -107,6 +107,9 @@ namespace Assets.Scripts
                         position: position,
                         rotation: Quaternion.identity,
                         parent: transform);
+
+                    food.name = Food.Name;
+
                     ScoreTMP.text = (currentCash - _price).ToString();
                 }
             }

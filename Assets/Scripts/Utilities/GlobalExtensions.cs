@@ -1,5 +1,6 @@
 ﻿using Assets.Contracts;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -97,6 +98,30 @@ namespace Assets.Scripts.Utilities
 
                 return targetPosition;
             };
+        }
+
+        public static void Add(this ConcurrentDictionary<string, List<GameObject>> dict, GameObject gameObject)
+        {
+            dict.AddOrUpdate(gameObject.transform.name,
+                key =>
+                {
+                    var list = new List<GameObject>();
+                    list.Add(gameObject);
+                    return list;
+                },
+                (key, list) =>
+                {
+                    list.Add(gameObject);
+                    return list;
+                });
+        }
+
+        public static bool Remove(this ConcurrentDictionary<string, List<GameObject>> dict, GameObject gameObject)
+        {
+            var list = default(List<GameObject>);
+            var ret = dict.TryGetValue(gameObject.name, out list);
+            ret = ret && list.Remove(gameObject);
+            return ret;
         }
     }
 }

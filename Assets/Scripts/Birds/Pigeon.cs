@@ -15,13 +15,24 @@ using static UnityEngine.Random;
 
 namespace Assets.Scripts.Birds
 {
-    public partial class Pigeon : BirdBase
+    public partial class Pigeon : BirdBase, IFood
     {
+        public const string Name = "Pigeon";
+        public int Energy => 150;
+        private BirdManager _birdManager;
+
         //public Transform[] Trees;
         protected override void Awake()
         {
+            _birdManager = BirdManager.Instance;
             base.Awake();
             ProduceCash();
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            _birdManager.AllBirds.Remove(gameObject);
         }
         private void ProduceCash()
         {
@@ -30,7 +41,7 @@ namespace Assets.Scripts.Birds
                 bool done = false;
                 switch (index)
                 {
-                    case 1:
+                    case 0:
                         bool stateChanged1((BirdContextState oldState, BirdContextState newState) states)
                         {
                             if (states.newState.ID == BirdEnum.Idling)
@@ -45,8 +56,13 @@ namespace Assets.Scripts.Birds
                         _lifeCycle.OnStateChanged += stateChanged1;
                         yield return new WaitUntil(() => done);
                         done = false;
+                        if (_birdManager.AllBirds.Remove(gameObject))
+                        {
+                            gameObject.transform.name = "Pigeon2";
+                            _birdManager.AllBirds.Add(gameObject);
+                        }
                         break;
-                    case 2:
+                    case 1:
                         bool stateChanged2((BirdContextState oldState, BirdContextState newState) states)
                         {
                             if (states.newState.ID == BirdEnum.Idling)
@@ -61,6 +77,11 @@ namespace Assets.Scripts.Birds
                         _lifeCycle.OnStateChanged += stateChanged2;
                         yield return new WaitUntil(() => done);
                         done = false;
+                        if (_birdManager.AllBirds.Remove(gameObject))
+                        {
+                            gameObject.transform.name = "Pigeon3";
+                            _birdManager.AllBirds.Add(gameObject);
+                        }
                         break;
                     default:
                         break;
@@ -69,7 +90,7 @@ namespace Assets.Scripts.Birds
 
             var coroutine = this.GetProduceCashCoroutine(options =>
             {
-                options.CoroutineTime = (timeStep: 5.0f, variationRange: 2f);
+                options.CoroutineTime = (timeStep: 7.0f, variationRange: 1f);
                 options.CashInfo = new List<(float timeOut, float variationRange, GameObject cash)>
                 {
                     (timeOut: 40f, variationRange: 5f, cash: null),
@@ -77,7 +98,6 @@ namespace Assets.Scripts.Birds
                     (timeOut: 0f, variationRange: 10f, cash: CashPrefabs[1])
                 };
                 options.HzedOutHandler = handleHzedOut;
-                return options;
             });
 
             StartCoroutine(coroutine?.Invoke(_cancelSource.Token));

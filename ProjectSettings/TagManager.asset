@@ -20,14 +20,14 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Birds
+  - Cash
   - Water
   - UI
   - Food
-  - Cash
+  - Birds
   - Enemy
-  - 
-  - 
+  - Predator
+  - Boundaries
   - 
   - 
   - 
@@ -52,4 +52,10 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Cash
+    uniqueID: 4112341211
+    locked: 0
+  - name: BIrd
+    uniqueID: 708552283
     locked: 0

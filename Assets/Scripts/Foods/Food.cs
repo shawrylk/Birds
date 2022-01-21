@@ -10,13 +10,14 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public class Food : BaseScript
+    public class Food : BaseScript, IFood
     {
+        public const string Name = "Food";
         private Rigidbody2D _rigidbody;
         private SpriteRenderer _sprite;
-        public int Price = 10;
         public int UpgradePrice = 1000;
-        public int Energy = 200;
+        public int Price { set; get; } = 10;
+        public int Energy { set; get; } = 200;
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody2D>();

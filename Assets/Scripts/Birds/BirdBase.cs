@@ -24,8 +24,8 @@ namespace Assets.Scripts.Birds
         protected BirdContext _lifeCycle = null;
         protected Animator _animator = null;
         protected Collider2D _collider = null;
-        protected string _foodTag = Global.FOOD_TAG;
         protected Channel _foodChannel = null;
+        protected string _foodTag = Food.Name;
 
         protected virtual void Awake()
         {
@@ -43,11 +43,23 @@ namespace Assets.Scripts.Birds
 
         protected virtual void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.gameObject.CompareTag(_foodTag))
+            if (collision.gameObject.name == _foodTag)
             {
                 _foodChannel.Enqueue((
                     signal: BirdSignal.FoundFood,
                     data: collision));
+            }
+            else if (collision.gameObject.CompareTag(Global.BOUNDARY_TAG))
+            {
+                if (collision.gameObject.name.ToLower() == Global.BOTTOM_BOUNDARY
+                    || collision.gameObject.name.ToLower() == Global.TOP_BOUNDARY)
+                {
+                    _rigidbody.AddForce(new Vector2(1, _rigidbody.velocity.y * -2) * Vector2.up, ForceMode2D.Impulse);
+                }
+                else
+                {
+                    _rigidbody.AddForce(new Vector2(_rigidbody.velocity.x * -2, 1) * Vector2.right, ForceMode2D.Impulse);
+                }
             }
         }
         protected virtual void StartLifeCycleOfBird()

@@ -410,17 +410,49 @@ PrefabInstance:
       propertyPath: UpgradeFoodQualityPriceTMP
       value: 
       objectReference: {fileID: 1527482967}
+    - target: {fileID: 7044278316617729998, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 7044278316617729999, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
       propertyPath: ScoreTMP
       value: 
       objectReference: {fileID: 1018050429}
+    - target: {fileID: 7044278316669678865, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 7044278316669678870, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
       propertyPath: ScoreTMP
       value: 
       objectReference: {fileID: 1018050429}
     - target: {fileID: 7044278316669678870, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
+      propertyPath: _scoreTMP
+      value: 
+      objectReference: {fileID: 1018050429}
+    - target: {fileID: 7044278316669678870, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
       propertyPath: DefaultBirdCount
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7044278316669678870, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
+      propertyPath: _birdPrefabs.Array.size
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7044278316669678870, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
+      propertyPath: _birdPrefabs.Array.data[0]
+      value: 
+      objectReference: {fileID: 3140282472051149434, guid: 8cce616fc3c99af4cb961ceb364f71fb, type: 3}
+    - target: {fileID: 7044278316669678870, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
+      propertyPath: _birdPrefabs.Array.data[1]
+      value: 
+      objectReference: {fileID: 500007068145132160, guid: 494f0107d3de2bb40923c0fa28b8cb55, type: 3}
+    - target: {fileID: 7044278316815700132, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7044278316836009346, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7044278317292685073, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
       propertyPath: DangerSign
@@ -474,6 +506,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7044278317531128002, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7044278318262976092, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7044278318312598024, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 55d40de89f880874ab9575c93780dfbc, type: 3}
 --- !u!1001 &7432570019760936482
@@ -485,7 +529,13 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7432570019034145119, guid: b845f2e10bb08ed4ab0d8d7d894dcfc5, type: 3}
       propertyPath: m_text
-      value: 4000
+      value: 400
+      objectReference: {fileID: 0}
+    - target: {fileID: 7432570019169896860, guid: b845f2e10bb08ed4ab0d8d7d894dcfc5, type: 3}
+      propertyPath: m_text
+      value: 'Bird 2
+
+        1000'
       objectReference: {fileID: 0}
     - target: {fileID: 7432570019189202735, guid: b845f2e10bb08ed4ab0d8d7d894dcfc5, type: 3}
       propertyPath: m_AnchorMax.y

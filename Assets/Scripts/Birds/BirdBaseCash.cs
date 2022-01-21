@@ -22,9 +22,10 @@ namespace Assets.Scripts.Birds
 
         public static Func<CancellationToken, IEnumerator> GetProduceCashCoroutine(
             this BirdBase birdBase,
-            Func<CashOptions, CashOptions> optionsCallback)
+            Action<CashOptions> optionsCallback)
         {
-            var options = optionsCallback?.Invoke(new CashOptions());
+            var options = new CashOptions();
+            optionsCallback?.Invoke(options);
 
             (float timeStep, float variationRange) coroutineTime = options.CoroutineTime;
             List<(float timeOut, float variationRange, GameObject cash)> cashInfo = options.CashInfo;
@@ -55,6 +56,7 @@ namespace Assets.Scripts.Birds
             var coinManager = Global.GameObjects.GetGameObject(Global.CASH_MANAGER_TAG);
             var currentCoin = cashInfo[indices.Current].cash;
             var hz = 0;
+            var hzedOutHandlerChanged = true;
 
             IEnumerator produceCash(CancellationToken token)
             {
@@ -72,12 +74,12 @@ namespace Assets.Scripts.Birds
                             parent: coinManager.transform);
                     }
 
-                    if (++hz >= hzOut)
+                    if (hzedOutHandlerChanged && ++hz >= hzOut)
                     {
-                        if (!indices.MoveNext()) continue;
+                        yield return hzedOutHandler?.Invoke(indices.Current);
+                        hzedOutHandlerChanged = indices.MoveNext();
                         hzOut = getHzOut(indices.Current);
                         currentCoin = cashInfo[indices.Current].cash;
-                        yield return hzedOutHandler?.Invoke(indices.Current);
                     }
                 }
             }

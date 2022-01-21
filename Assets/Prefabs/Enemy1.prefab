@@ -136,7 +136,7 @@ CapsuleCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -155,4 +155,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Health: 50
-  Cash: {fileID: 5203285797296096655, guid: bd87fca1dc2d35f4a89eb915045b6406, type: 3}
+  Cash: {fileID: 7078499240789614524, guid: 241d858e35649914eac6b86c0c717243, type: 3}

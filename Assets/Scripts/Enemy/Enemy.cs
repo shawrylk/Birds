@@ -154,7 +154,7 @@ namespace Assets.Scripts.Enemy
 
             StartCoroutine(deathHandler());
 
-            Enumerable.Range(0, 3)
+            Enumerable.Range(0, 1)
                 .ToList()
                 .ForEach(num => GiveCash());
 
