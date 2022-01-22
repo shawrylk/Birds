@@ -16,7 +16,7 @@ namespace Assets.Scripts
         public GameObject[] EnemyPrefabs;
         public GameObject DangerSign;
         [SerializeField]
-        private ParticleSystem _touchFx;
+        private ParticleSystem _touchFx = null;
         private List<ParticleSystem> _touchFxPool = new List<ParticleSystem>();
 
         private int _enemy_count_max;
@@ -79,7 +79,7 @@ namespace Assets.Scripts
             var top = _boundaries[Global.TOP_BOUNDARY].position - verticalMargin - new Vector3(0, heightInUnit / 2, 0);
             var bottom = _boundaries[Global.BOTTOM_BOUNDARY].position + verticalMargin;
 
-            var timeStep1 = UnityEngine.Random.Range(5f, 7f);
+            var timeStep1 = UnityEngine.Random.Range(50f, 70f);
             var timeStep2 = 2.0f;
             while (true)
             {

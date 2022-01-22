@@ -11,39 +11,25 @@ using static UnityEngine.Random;
 
 namespace Assets.Scripts.Enemy
 {
-    public class Enemy : BaseScript
+    public class Enemy : AnimalBase
     {
         private IInputManager _input;
-        private Rigidbody2D _rigidbody;
-        private SpriteRenderer _sprite = null;
-        private Animator _animator = null;
-        private Collider2D _collider = null;
         private EnemyManager _enemyManager;
         private GameObject _cashManager;
-        private const float castThickness = 2f;
+        private const float castThickness = 1f;
         private bool destroyed = false;
 
         public float Health = 100;
         public GameObject Cash;
 
-        private void Awake()
+        protected override void Awake()
         {
             _cashManager = Global.GameObjects.GetGameObject(Global.CASH_MANAGER_TAG);
 
             _enemyManager = Global.GameObjects.GetGameObject(Global.ENEMY_MANAGER_TAG).GetComponent<EnemyManager>();
             _enemyManager.TouchEvent += TouchHandler;
-
-            _rigidbody = GetComponent<Rigidbody2D>();
-            _sprite = GetComponent<SpriteRenderer>();
-            _animator = GetComponent<Animator>();
-            _collider = GetComponent<Collider2D>();
-
             FindBird();
-        }
-
-        private void Update()
-        {
-            _sprite.flipX = _rigidbody.velocity.x <= 0;
+            base.Awake();
         }
 
         protected override void OnDestroy()
@@ -57,8 +43,15 @@ namespace Assets.Scripts.Enemy
             var sToHz = timeStep.GetSToHzHandler();
             var timeOutHz = sToHz(Range(7, 10));
             var positionHandler = transform.GetPositionResolverHandler();
-            var (pidHandler, resetPid) = transform.GetPidHandler(20f, 10f, 21f, -10f, 10f, _rigidbody);
-            var targetFinder = new TargetFinder();
+            var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
+            {
+                options.X = (20f, 10f, 21f);
+                options.Y = (20f, 10f, 21f);
+                options.ClampX = (-10f, 10f);
+                options.ClampY = (-10f, 10f);
+                options.Transform = transform;
+                options.Rigidbody2D = _rigidbody;
+            }); var targetFinder = new TargetFinder();
 
 
             IEnumerator huntingHandler()
@@ -165,24 +158,16 @@ namespace Assets.Scripts.Enemy
                 _cashManager.transform);
         }
 
-        private void OnTriggerEnter2D(Collider2D collision)
+        protected override void OnTriggerEnter2D(Collider2D collision)
         {
             if (collision != null
                 && collision.transform.CompareTag(Global.BIRD_TAG))
             {
                 Destroy(collision.gameObject);
             }
-            else if (collision.gameObject.CompareTag(Global.BOUNDARY_TAG))
+            else
             {
-                if (collision.gameObject.name.ToLower() == Global.BOTTOM_BOUNDARY
-                    || collision.gameObject.name.ToLower() == Global.TOP_BOUNDARY)
-                {
-                    _rigidbody.AddForce(new Vector2(1, _rigidbody.velocity.y * -2) * Vector2.up, ForceMode2D.Impulse);
-                }
-                else
-                {
-                    _rigidbody.AddForce(new Vector2(_rigidbody.velocity.x * -2, 1) * Vector2.right, ForceMode2D.Impulse);
-                }
+                base.OnTriggerEnter2D(collision);
             }
         }
     }

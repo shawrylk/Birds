@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public class Cash : BaseScript
+    public class Cash : BaseScript 
     {
         private TextMeshProUGUI _score;
         private Rigidbody2D _rigidbody;

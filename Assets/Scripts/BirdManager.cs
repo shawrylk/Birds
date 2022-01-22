@@ -17,9 +17,9 @@ public class BirdManager : BaseScript
     public static BirdManager Instance => _instance;
 
     [SerializeField]
-    private GameObject[] _birdPrefabs;
+    private GameObject[] _birdPrefabs = null;
     [SerializeField]
-    private TextMeshProUGUI _scoreTMP;
+    private TextMeshProUGUI _scoreTMP = null;
 
     public int DefaultBirdCount = 2;
     public ConcurrentDictionary<string, List<GameObject>> AllBirds = new ConcurrentDictionary<string, List<GameObject>>();
@@ -28,7 +28,7 @@ public class BirdManager : BaseScript
     private Action<int> _spawnBird;
     private int _bird_last_index;
 
-    public void Awake()
+    private void Awake()
     {
         _instance = FindObjectOfType<BirdManager>();
         _boundaries = Global.Items[Global.BOUNDARIES_TAG] as Dictionary<string, Transform>;

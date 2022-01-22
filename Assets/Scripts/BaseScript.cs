@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public class BaseScript : MonoBehaviour
+    public class BaseScript: MonoBehaviour
     {
         protected CancellationTokenSource _cancelSource = new CancellationTokenSource();
         protected List<IDisposable> _disposables = new List<IDisposable>();

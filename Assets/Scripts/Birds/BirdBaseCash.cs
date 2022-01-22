@@ -17,6 +17,7 @@ namespace Assets.Scripts.Birds
         {
             public (float timeStep, float variationRange) CoroutineTime;
             public List<(float timeOut, float variationRange, GameObject cash)> CashInfo;
+            public Vector2 InitialVelocity;
             public Func<int, IEnumerator> HzedOutHandler;
         }
 
@@ -72,6 +73,8 @@ namespace Assets.Scripts.Birds
                             position: birdBase.transform.position,
                             rotation: Quaternion.identity,
                             parent: coinManager.transform);
+
+                        coin.GetComponent<Rigidbody2D>().AddRelativeForce(options.InitialVelocity);
                     }
 
                     if (hzedOutHandlerChanged && ++hz >= hzOut)

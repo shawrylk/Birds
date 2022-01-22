@@ -40,7 +40,7 @@ namespace Assets.Scripts
 
         private void SetUpManagers()
         {
-            var script = FoodsManager.GetComponent<BaseScript>();
+            var script = FoodsManager.GetComponent<AnimalBase>();
         }
         private void OnDisable()
         {

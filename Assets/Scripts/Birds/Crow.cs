@@ -17,9 +17,9 @@ namespace Assets.Scripts.Birds
         {
             //var birdMask = LayerMask.GetMask(Global.BIRDS_MARK_LAYER);
             //Physics2D.IgnoreLayerCollision(birdMask, birdMask, false);
+            base.Awake();
             _birdManager = BirdManager.Instance;
             _foodTag = Pigeon.Name;
-            base.Awake();
             ProduceCash();
         }
         private void ProduceCash()
@@ -39,8 +39,15 @@ namespace Assets.Scripts.Birds
         protected override Func<Context, IEnumerator> HandleIdlingState()
         {
             var positionHandler = transform.GetPositionResolverHandler();
-            var (pidHandler, resetPid) = transform.GetPidHandler(10f, 10f, 11f, -7f, 7f, _rigidbody);
-
+            var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
+            {
+                options.X = (10f, 10f, 11f);
+                options.Y = (10f, 10f, 11f);
+                options.ClampX = (-7f, 7f);
+                options.ClampY = (-7f, 7f);
+                options.Transform = transform;
+                options.Rigidbody2D = _rigidbody;
+            });
             //var treeSlotFinder = new TreeFinder();
             //treeSlotFinder.UpdateTargets(Trees);
 
@@ -103,7 +110,7 @@ namespace Assets.Scripts.Birds
 
                     var position = getRandomPosition();
                     pidHandler(position, timeStep);
- 
+
                     if (++time >= timeOutHz)
                     {
                         birdContext.State = huntingState;
@@ -122,7 +129,15 @@ namespace Assets.Scripts.Birds
             var sToHz = timeStep.GetSToHzHandler();
             var timeOutHz = sToHz(Range(7, 10));
             var positionHandler = transform.GetPositionResolverHandler();
-            var (pidHandler, resetPid) = transform.GetPidHandler(10f, 10f, 11f, -7f, 7f, _rigidbody);
+            var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
+            {
+                options.X = (10f, 10f, 11f);
+                options.Y = (10f, 10f, 11f);
+                options.ClampX = (-7f, 7f);
+                options.ClampY = (-7f, 7f);
+                options.Transform = transform;
+                options.Rigidbody2D = _rigidbody;
+            });
             var targetFinder = new TargetFinder();
 
 
@@ -191,7 +206,15 @@ namespace Assets.Scripts.Birds
             var sToHz = timeStep.GetSToHzHandler();
             var timeOutHz = sToHz(Range(7, 10));
             var positionHandler = transform.GetPositionResolverHandler();
-            var (pidHandler, resetPid) = transform.GetPidHandler(10f, 10f, 11f, -9f, 9f, _rigidbody);
+            var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
+            {
+                options.X = (10f, 10f, 11f);
+                options.Y = (10f, 10f, 11f);
+                options.ClampX = (-9f, 9f);
+                options.ClampY = (-9f, 9f);
+                options.Transform = transform;
+                options.Rigidbody2D = _rigidbody;
+            });
             var targetFinder = new TargetFinder();
 
 

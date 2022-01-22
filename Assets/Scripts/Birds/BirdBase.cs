@@ -13,35 +13,22 @@ using Channel = System.Collections.Concurrent.ConcurrentQueue<(Assets.Scripts.Bi
 
 namespace Assets.Scripts.Birds
 {
-    public partial class BirdBase : BaseScript
+    public partial class BirdBase : AnimalBase
     {
         public int Price = 100;
         public float EnergyConsumePerSecond = 10;
         public GameObject[] CashPrefabs;
 
-        protected Rigidbody2D _rigidbody = null;
-        protected SpriteRenderer _sprite = null;
-        protected BirdContext _lifeCycle = null;
-        protected Animator _animator = null;
-        protected Collider2D _collider = null;
         protected Channel _foodChannel = null;
         protected string _foodTag = Food.Name;
 
-        protected virtual void Awake()
+        protected override void Awake()
         {
-            _rigidbody = GetComponent<Rigidbody2D>();
-            _sprite = GetComponent<SpriteRenderer>();
-            _animator = GetComponent<Animator>();
-            _collider = GetComponent<Collider2D>();
+            base.Awake();
             StartLifeCycleOfBird();
         }
 
-        protected virtual void Update()
-        {
-            _sprite.flipX = _rigidbody.velocity.x < 0;
-        }
-
-        protected virtual void OnTriggerEnter2D(Collider2D collision)
+        protected override void OnTriggerEnter2D(Collider2D collision)
         {
             if (collision.gameObject.name == _foodTag)
             {
@@ -49,17 +36,9 @@ namespace Assets.Scripts.Birds
                     signal: BirdSignal.FoundFood,
                     data: collision));
             }
-            else if (collision.gameObject.CompareTag(Global.BOUNDARY_TAG))
+            else
             {
-                if (collision.gameObject.name.ToLower() == Global.BOTTOM_BOUNDARY
-                    || collision.gameObject.name.ToLower() == Global.TOP_BOUNDARY)
-                {
-                    _rigidbody.AddForce(new Vector2(1, _rigidbody.velocity.y * -2) * Vector2.up, ForceMode2D.Impulse);
-                }
-                else
-                {
-                    _rigidbody.AddForce(new Vector2(_rigidbody.velocity.x * -2, 1) * Vector2.right, ForceMode2D.Impulse);
-                }
+                base.OnTriggerEnter2D(collision);
             }
         }
         protected virtual void StartLifeCycleOfBird()
