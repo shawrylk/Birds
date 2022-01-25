@@ -74,6 +74,52 @@ namespace Assets.Scripts.Utilities
             return (seconds) => 1 / timeStepSeconds * seconds;
         }
 
+        public static Func<IEnumerator<int>> GetHzWaiter(this float hzPerSecond)
+        {
+            IEnumerator<int> wait()
+            {
+                var i = 0;
+                while (i < hzPerSecond)
+                {
+                    yield return i++;
+                }
+            }
+
+            return wait;
+        }
+
+        public static Func<T> SampleAt<T>(this Func<T> action, float hzedOut)
+        {
+            var wait = hzedOut.GetHzWaiter();
+            var ret = default(T);
+            var it = wait();
+            return () =>
+            {
+                if (!it.MoveNext())
+                {
+                    it = wait();
+                    ret = action.Invoke();
+                }
+                return ret;
+            };
+        }
+
+        public static (Action<float> regen, Func<bool> isRunOut) GetEnergyHanlder(this float energyConsumePerSecond, float energyHzedOut, Func<float, float> sToHz)
+        {
+            var hz = 0;
+
+            Action<float> regen = (energy) =>
+            {
+                var time = energy / energyConsumePerSecond;
+                energyHzedOut = sToHz(time);
+                hz = 0;
+            };
+
+            Func<bool> isRunOut = () => hz++ > energyHzedOut;
+
+            return (regen, isRunOut);
+        }
+
         public static GameObject GetGameObject(this Dictionary<string, GameObject> dictionary, string keyTag)
         {
             GameObject go = null;
@@ -88,7 +134,7 @@ namespace Assets.Scripts.Utilities
             return go;
         }
 
-        public static Func<ITargetFinder, Vector3> GetPositionResolverHandler(this Transform transform)
+        public static Func<ITargetFinder, Vector3> GetPositionResolver(this Transform transform)
         {
             return (targetFinder) =>
             {

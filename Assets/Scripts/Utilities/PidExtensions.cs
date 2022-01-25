@@ -10,6 +10,7 @@ namespace Assets.Scripts.Utilities
 {
     public class PIDOptions
     {
+        public (bool enableX, bool enableY) Enable;
         public (float kp, float ki, float kd) X;
         public (float kp, float ki, float kd) Y;
         public (float min, float max) ClampX;
@@ -24,21 +25,25 @@ namespace Assets.Scripts.Utilities
             Action reset)
             GetPidHandler(Action<PIDOptions> optionsCallback)
         {
-            var options = new PIDOptions();
+            var options = new PIDOptions()
+            {
+                Enable = (enableX: true, enableY: true)
+            };
+
             optionsCallback?.Invoke(options);
 
-            IPidController pidX = new PidController();
-            IPidController pidY = new PidController();
+            IPidController pidX = options.Enable.enableX ? new PidController() : null;
+            IPidController pidY = options.Enable.enableY ? new PidController() : null;
 
-            pidX.Ready(options.X.kp, options.X.ki, options.X.kd);
-            pidY.Ready(options.Y.kp, options.Y.ki, options.Y.kd);
+            pidX?.Ready(options.X.kp, options.X.ki, options.X.kd);
+            pidY?.Ready(options.Y.kp, options.Y.ki, options.Y.kd);
 
             return ((targetPosition, timeStep) =>
             {
                 var distanceVector = targetPosition - options.Transform.position;
 
-                var magnitudeX = pidX.GetOutputValue(distanceVector.x, timeStep);
-                var magnitudeY = pidY.GetOutputValue(distanceVector.y, timeStep);
+                var magnitudeX = pidX?.GetOutputValue(distanceVector.x, timeStep) ?? 0.0f;
+                var magnitudeY = pidY?.GetOutputValue(distanceVector.y, timeStep) ?? 0.0f;
 
                 magnitudeX = Mathf.Clamp(magnitudeX, options.ClampX.min, options.ClampX.max);
                 magnitudeY = Mathf.Clamp(magnitudeY, options.ClampY.min, options.ClampY.max);
@@ -48,8 +53,8 @@ namespace Assets.Scripts.Utilities
             },
             () =>
             {
-                pidX.Ready(options.X.kp, options.X.ki, options.X.kd);
-                pidY.Ready(options.Y.kp, options.Y.ki, options.Y.kd);
+                pidX?.Ready(options.X.kp, options.X.ki, options.X.kd);
+                pidY?.Ready(options.Y.kp, options.Y.ki, options.Y.kd);
             }
             );
         }

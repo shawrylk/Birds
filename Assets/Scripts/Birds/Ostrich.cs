@@ -51,61 +51,33 @@ namespace Assets.Scripts.Birds
         }
         protected override Func<Context, IEnumerator> HandleIdlingState()
         {
-            var positionHandler = transform.GetPositionResolverHandler();
-            var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
+            var (move, resetInertia) = PidExtensions.GetPidHandler(options =>
             {
                 options.X = (10f, 10f, 11f);
                 options.Y = (5f, 0f, 1f);
                 options.ClampX = (-7f, 7f);
-                options.ClampY = (-7f, 7f);
+                options.ClampY = (-7f, 0f);
                 options.Transform = transform;
                 options.Rigidbody2D = _rigidbody;
             });
+
             var randomTargetGenerator = new RandomPathGenerator();
-            randomTargetGenerator.UpdateTargets(null);
+            var positionHandler = transform.GetPositionResolver();
+            var randomPositionHandler = new Func<Vector3>(
+                () => positionHandler(randomTargetGenerator));
 
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
-            var timeOutHz = sToHz(Range(5, 7));
+            var yieldTimeStep = new WaitForSeconds(timeStep);
+            var (regenEnergy, runOutEnergy) = EnergyConsumePerSecond.GetEnergyHanlder(sToHz(Range(5, 7)), sToHz);
 
             IEnumerator idlingHandler(Context context)
             {
                 var birdContext = context as BirdContext;
                 if (birdContext is null) yield return null;
 
-                var time = 0;
-
-                Func<Vector3> getRandomPositionHandler(float timeOut)
-                {
-                    var hzOut = sToHz(timeOut);
-                    var ret = default(Vector3);
-                    var first = true;
-                    IEnumerable<int> wait()
-                    {
-                        while (true)
-                        {
-                            var i = 0;
-                            while (i < hzOut)
-                            {
-                                yield return i++;
-                            }
-                            yield break;
-                        }
-                    }
-                    var it = wait().GetEnumerator();
-                    return () =>
-                    {
-                        if (!it.MoveNext() || first)
-                        {
-                            first = false;
-                            it = wait().GetEnumerator();
-                            ret = positionHandler(randomTargetGenerator);
-                        }
-                        return ret;
-                    };
-                }
-
-                var getRandomPosition = getRandomPositionHandler(Range(1.7f, 2.3f));
+                var hzedOut = sToHz(Range(1.7f, 2.3f));
+                var getRandomPosition = randomPositionHandler.SampleAt(hzedOut);
 
                 while (true)
                 {
@@ -113,22 +85,20 @@ namespace Assets.Scripts.Birds
                     {
                         if (result.key == BirdSignal.EnergyRegen)
                         {
-                            var Energytime = Convert.ToInt32(result.value) / EnergyConsumePerSecond;
-                            timeOutHz = sToHz(Energytime);
+                            regenEnergy(Convert.ToInt32(result.value));
                         }
                     }
 
                     var position = getRandomPosition();
-                    position.y = _floorY;
-                    pidHandler(position, timeStep);
+                    move(position, timeStep);
 
-                    if (++time >= timeOutHz)
+                    if (runOutEnergy())
                     {
                         birdContext.State = huntingState;
                         break;
-                    }
+                    };
 
-                    yield return new WaitForSeconds(timeStep);
+                    yield return yieldTimeStep;
                 }
             }
             return idlingHandler;
@@ -136,35 +106,33 @@ namespace Assets.Scripts.Birds
 
         protected override Func<Context, IEnumerator> HandleHuntingState()
         {
-            var timeStep = 0.1f;
-            var sToHz = timeStep.GetSToHzHandler();
-            var timeOutHz = sToHz(Range(7, 10));
-            var positionHandler = transform.GetPositionResolverHandler();
-            var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
+            var (move, resetInertia) = PidExtensions.GetPidHandler(options =>
             {
                 options.X = (10f, 10f, 11f);
                 options.Y = (5f, 0f, 0f);
                 options.ClampX = (-7f, 7f);
-                options.ClampY = (-7f, 7f);
+                options.ClampY = (-7f, 0f);
                 options.Transform = transform;
                 options.Rigidbody2D = _rigidbody;
             });
+
+            var positionHandler = transform.GetPositionResolver();
             var targetFinder = new TargetFinder();
 
+            var timeStep = 0.1f;
+            var sToHz = timeStep.GetSToHzHandler();
+            var yieldTimeStep = new WaitForSeconds(timeStep);
+            var (regenEnergy, runOutEnergy) = EnergyConsumePerSecond.GetEnergyHanlder(sToHz(Range(7, 10)), sToHz);
+
+            var foodManager = Global.GameObjects.GetGameObject(Global.FOOD_MANAGER_TAG);
 
             IEnumerator huntingHandler(Context context)
             {
                 var birdContext = context as BirdContext;
                 if (birdContext is null) yield return null;
-                var time = 0;
-
-                _collider.isTrigger = true;
-                _animator.enabled = true;
 
                 while (true)
                 {
-                    yield return new WaitForSeconds(timeStep);
-
                     if (birdContext.Data.Channel.TryDequeue(out var result))
                     {
                         if (result.key == BirdSignal.FoundFood
@@ -173,17 +141,13 @@ namespace Assets.Scripts.Birds
                         {
                             var energy = c.gameObject.GetComponent<Food>().Energy;
                             _lifeCycle.Data.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
-
-                            birdContext.State = idlingState;
-                            _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
-
                             Destroy(c.gameObject, 0.1f);
-                            _collider.isTrigger = false;
+
+                            _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
+                            birdContext.State = idlingState;
                             break;
                         }
                     }
-
-                    var foodManager = Global.GameObjects.GetGameObject(Global.FOOD_MANAGER_TAG);
 
                     var targets = foodManager
                         .GetComponentsInChildren<Transform>()
@@ -191,63 +155,51 @@ namespace Assets.Scripts.Birds
                         .ToList();
 
                     targetFinder.UpdateTargets(targets);
-
                     var position = positionHandler(targetFinder);
-                    position.y = _floorY;
-                    print($"target = {position}");
-                    pidHandler(position, timeStep);
 
-                    //if (_rigidbody.velocity.sqrMagnitude > 3.0f)
-                    //{
-                    //    _animator.Play("bird_1_fly_fast");
-                    //}
-                    //else
-                    //{
-                    //    _animator.Play("fly");
-                    //}
+                    move(position, timeStep);
 
-                    if (time++ >= timeOutHz)
+                    if (runOutEnergy())
                     {
                         _lifeCycle.State = starvingState;
                         break;
                     }
+
+                    yield return yieldTimeStep;
                 }
             }
             return huntingHandler;
         }
         protected override Func<Context, IEnumerator> HandleStarvingState()
         {
-            var timeStep = 0.1f;
-            var sToHz = timeStep.GetSToHzHandler();
-            var timeOutHz = sToHz(Range(7, 10));
-            var positionHandler = transform.GetPositionResolverHandler();
-            var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
+            var (move, resetInertia) = PidExtensions.GetPidHandler(options =>
             {
                 options.X = (10f, 10f, 11f);
                 options.Y = (5f, 0f, 0f);
-                options.ClampX = (-9f, 9f);
-                options.ClampY = (-9f, 9f);
+                options.ClampX = (-7f, 7f);
+                options.ClampY = (-7f, 0f);
                 options.Transform = transform;
                 options.Rigidbody2D = _rigidbody;
             });
+
+            var positionHandler = transform.GetPositionResolver();
             var targetFinder = new TargetFinder();
 
+            var timeStep = 0.1f;
+            var sToHz = timeStep.GetSToHzHandler();
+            var yieldTimeStep = new WaitForSeconds(timeStep);
+            var (regenEnergy, runOutEnergy) = EnergyConsumePerSecond.GetEnergyHanlder(sToHz(Range(7, 10)), sToHz);
+
+            var foodManager = Global.GameObjects.GetGameObject(Global.FOOD_MANAGER_TAG);
+            var grayScale = 0.0f;
 
             IEnumerator starvingHandler(Context context)
             {
                 var birdContext = context as BirdContext;
                 if (birdContext is null) yield return null;
-                var time = 0;
-                var grayScale = 0.0f;
-
-                _animator.enabled = true;
-
-                //_animator.Play("bird_1_starving");
 
                 while (true)
                 {
-                    yield return new WaitForSeconds(timeStep);
-
                     if (birdContext.Data.Channel.TryDequeue(out var result))
                     {
                         if (result.key == BirdSignal.FoundFood
@@ -256,15 +208,13 @@ namespace Assets.Scripts.Birds
                         {
                             var energy = c.gameObject.GetComponent<Food>().Energy;
                             _lifeCycle.Data.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
-
-                            birdContext.State = idlingState;
-                            _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
-
                             Destroy(c.gameObject, 0.1f);
+
+                            _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
+                            birdContext.State = idlingState;
                             break;
                         }
                     }
-                    var foodManager = Global.GameObjects.GetGameObject(Global.FOOD_MANAGER_TAG);
 
                     var targets = foodManager
                         .GetComponentsInChildren<Transform>()
@@ -273,19 +223,22 @@ namespace Assets.Scripts.Birds
 
                     targetFinder.UpdateTargets(targets);
                     var position = positionHandler(targetFinder);
-                    position.y = _floorY;
-                    pidHandler(position, timeStep);
+
+                    move(position, timeStep);
 
                     if (grayScale < 1) grayScale += 0.03f;
                     _sprite.material.SetFloat("_GrayscaleAmount", grayScale);
 
-                    if (time++ >= timeOutHz)
+                    if (runOutEnergy())
                     {
-                        _lifeCycle.State = deathState;
+                        _lifeCycle.State = starvingState;
                         break;
                     }
+
+                    yield return yieldTimeStep;
                 }
             }
+
             return starvingHandler;
         }
     }

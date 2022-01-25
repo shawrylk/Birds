@@ -63,7 +63,7 @@ namespace Assets.Scripts.Birds
         }
         protected virtual Func<Context, IEnumerator> HandleIdlingState()
         {
-            var positionHandler = transform.GetPositionResolverHandler();
+            var positionHandler = transform.GetPositionResolver();
             //var (pidHandler, resetPid) = transform.GetPidHandler(10f, 10f, 11f, -7f, 7f, _rigidbody);
             var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
             {
@@ -124,37 +124,10 @@ namespace Assets.Scripts.Birds
 
                 //var (tempPositionHandler, lateProcessHandler) = selector();
 
-                Func<Vector3> getRandomPositionHandler(float timeOut)
-                {
-                    var hzOut = sToHz(timeOut);
-                    var ret = default(Vector3);
-                    var first = true;
-                    IEnumerable<int> wait()
-                    {
-                        while (true)
-                        {
-                            var i = 0;
-                            while (i < hzOut)
-                            {
-                                yield return i++;
-                            }
-                            yield break;
-                        }
-                    }
-                    var it = wait().GetEnumerator();
-                    return () =>
-                    {
-                        if (!it.MoveNext() || first)
-                        {
-                            first = false;
-                            it = wait().GetEnumerator();
-                            ret = positionHandler(randomTargetGenerator);
-                        }
-                        return ret;
-                    };
-                }
-
-                var getRandomPosition = getRandomPositionHandler(Range(1.7f, 2.3f));
+                var hzedOut = sToHz(Range(1.7f, 2.3f));
+                var getRandomPosition = new Func<Vector3>(
+                    () => positionHandler(randomTargetGenerator))
+                    .SampleAt(hzedOut);
 
                 while (true)
                 {
@@ -211,7 +184,7 @@ namespace Assets.Scripts.Birds
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
             var timeOutHz = sToHz(Range(7, 10));
-            var positionHandler = transform.GetPositionResolverHandler();
+            var positionHandler = transform.GetPositionResolver();
             var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
             {
                 options.X = (10f, 10f, 11f);
@@ -287,7 +260,7 @@ namespace Assets.Scripts.Birds
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
             var timeOutHz = sToHz(Range(7, 10));
-            var positionHandler = transform.GetPositionResolverHandler();
+            var positionHandler = transform.GetPositionResolver();
             var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
             {
                 options.X = (10f, 10f, 11f);

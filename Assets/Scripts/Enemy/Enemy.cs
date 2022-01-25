@@ -24,12 +24,11 @@ namespace Assets.Scripts.Enemy
 
         protected override void Awake()
         {
+            base.Awake();
             _cashManager = Global.GameObjects.GetGameObject(Global.CASH_MANAGER_TAG);
-
             _enemyManager = Global.GameObjects.GetGameObject(Global.ENEMY_MANAGER_TAG).GetComponent<EnemyManager>();
             _enemyManager.TouchEvent += TouchHandler;
             FindBird();
-            base.Awake();
         }
 
         protected override void OnDestroy()
@@ -42,7 +41,7 @@ namespace Assets.Scripts.Enemy
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
             var timeOutHz = sToHz(Range(7, 10));
-            var positionHandler = transform.GetPositionResolverHandler();
+            var positionHandler = transform.GetPositionResolver();
             var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
             {
                 options.X = (20f, 10f, 21f);
