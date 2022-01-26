@@ -70,7 +70,7 @@ namespace Assets.Scripts
         }
         private IEnumerator SpawnEnemy()
         {
-            var offset = 0.6f;
+            var offset = 2f;
             var heightInUnit = Screen.height * Global.UnitsPerPixel;
             var horizontalMargin = new Vector3(offset, 0, 0);
             var verticalMargin = new Vector3(0, offset, 0);

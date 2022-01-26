@@ -63,7 +63,7 @@ public class BirdManager : BaseScript
 
     private Action<int> GetSpawnBirdHandler()
     {
-        var offset = 1f;
+        var offset = 2f;
         var horizontalMargin = new Vector3(offset, 0, 0);
         var verticalMargin = new Vector3(0, offset, 0);
         var left = _boundaries[Global.LEFT_BOUNDARY].position + horizontalMargin;

@@ -24,14 +24,17 @@ namespace Assets.Scripts.Birds
                 .position.y;
 
             _floorY = floorY + _collider.bounds.size.y * transform.localScale.y;
-            print($"Floor = {floorY}");
-            print($"Floor offset = {_floorY}");
+
             _birdManager = BirdManager.Instance;
             ProduceCash();
         }
 
         protected override void OnTriggerEnter2D(Collider2D collision)
         {
+            if (collision.gameObject.name.ToLower() == Global.BOTTOM_BOUNDARY)
+            {
+                _lifeCycle.Data.Channel.Enqueue((BirdSignal.Grounded, null));
+            }
             base.OnTriggerEnter2D(collision);
         }
         private void ProduceCash()
@@ -54,7 +57,7 @@ namespace Assets.Scripts.Birds
             var (move, resetInertia) = PidExtensions.GetPidHandler(options =>
             {
                 options.X = (10f, 10f, 11f);
-                options.Y = (5f, 0f, 1f);
+                options.Y = (10f, 10f, 11f);
                 options.ClampX = (-7f, 7f);
                 options.ClampY = (-7f, 0f);
                 options.Transform = transform;
@@ -69,12 +72,13 @@ namespace Assets.Scripts.Birds
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
             var yieldTimeStep = new WaitForSeconds(timeStep);
-            var (regenEnergy, runOutEnergy) = EnergyConsumePerSecond.GetEnergyHanlder(sToHz(Range(5, 7)), sToHz);
 
             IEnumerator idlingHandler(Context context)
             {
                 var birdContext = context as BirdContext;
                 if (birdContext is null) yield return null;
+
+                var (regenEnergy, runOutEnergy) = EnergyConsumePerSecond.GetEnergyHanlder(sToHz(Range(5, 7)), sToHz);
 
                 var hzedOut = sToHz(Range(1.7f, 2.3f));
                 var getRandomPosition = randomPositionHandler.SampleAt(hzedOut);
@@ -90,6 +94,7 @@ namespace Assets.Scripts.Birds
                     }
 
                     var position = getRandomPosition();
+                    position.y = _floorY;
                     move(position, timeStep);
 
                     if (runOutEnergy())
@@ -109,20 +114,18 @@ namespace Assets.Scripts.Birds
             var (move, resetInertia) = PidExtensions.GetPidHandler(options =>
             {
                 options.X = (10f, 10f, 11f);
-                options.Y = (5f, 0f, 0f);
-                options.ClampX = (-7f, 7f);
-                options.ClampY = (-7f, 0f);
+                options.Y = (70f, 85f, 45f);
+                options.ClampX = (-5f, 5f);
+                options.ClampY = (-36f, 36f);
                 options.Transform = transform;
                 options.Rigidbody2D = _rigidbody;
             });
 
-            var positionHandler = transform.GetPositionResolver();
             var targetFinder = new TargetFinder();
 
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
             var yieldTimeStep = new WaitForSeconds(timeStep);
-            var (regenEnergy, runOutEnergy) = EnergyConsumePerSecond.GetEnergyHanlder(sToHz(Range(7, 10)), sToHz);
 
             var foodManager = Global.GameObjects.GetGameObject(Global.FOOD_MANAGER_TAG);
 
@@ -130,6 +133,8 @@ namespace Assets.Scripts.Birds
             {
                 var birdContext = context as BirdContext;
                 if (birdContext is null) yield return null;
+
+                var (regenEnergy, runOutEnergy) = EnergyConsumePerSecond.GetEnergyHanlder(sToHz(Range(7, 10)), sToHz);
 
                 while (true)
                 {
@@ -143,21 +148,33 @@ namespace Assets.Scripts.Birds
                             _lifeCycle.Data.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
                             Destroy(c.gameObject, 0.1f);
 
+                            resetInertia();
+
                             _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
                             birdContext.State = idlingState;
                             break;
                         }
+                        else if (result.key == BirdSignal.Grounded)
+                        {
+                            var targets = foodManager
+                                .GetComponentsInChildren<Transform>()
+                                .Skip(Global.PARENT_TRANSFORM)
+                                .ToList();
+
+                            targetFinder.UpdateTargets(targets);
+                        }
                     }
 
-                    var targets = foodManager
-                        .GetComponentsInChildren<Transform>()
-                        .Skip(Global.PARENT_TRANSFORM)
-                        .ToList();
 
-                    targetFinder.UpdateTargets(targets);
-                    var position = positionHandler(targetFinder);
+                    var (targetTransform, targetPosition) = targetFinder.GetHighestPriorityTarget(transform);
 
-                    move(position, timeStep);
+                    if (targetTransform is null || targetPosition.y > -2)
+                    {
+                        targetPosition.y = _floorY;
+                    }
+
+                    move(targetTransform?.position ?? targetPosition, timeStep);
+
 
                     if (runOutEnergy())
                     {
@@ -175,20 +192,18 @@ namespace Assets.Scripts.Birds
             var (move, resetInertia) = PidExtensions.GetPidHandler(options =>
             {
                 options.X = (10f, 10f, 11f);
-                options.Y = (5f, 0f, 0f);
+                options.Y = (80f, 90f, 50f);
                 options.ClampX = (-7f, 7f);
-                options.ClampY = (-7f, 0f);
+                options.ClampY = (-48f, 48f);
                 options.Transform = transform;
                 options.Rigidbody2D = _rigidbody;
             });
 
-            var positionHandler = transform.GetPositionResolver();
             var targetFinder = new TargetFinder();
 
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
             var yieldTimeStep = new WaitForSeconds(timeStep);
-            var (regenEnergy, runOutEnergy) = EnergyConsumePerSecond.GetEnergyHanlder(sToHz(Range(7, 10)), sToHz);
 
             var foodManager = Global.GameObjects.GetGameObject(Global.FOOD_MANAGER_TAG);
             var grayScale = 0.0f;
@@ -197,6 +212,8 @@ namespace Assets.Scripts.Birds
             {
                 var birdContext = context as BirdContext;
                 if (birdContext is null) yield return null;
+
+                var (regenEnergy, runOutEnergy) = EnergyConsumePerSecond.GetEnergyHanlder(sToHz(Range(7, 10)), sToHz);
 
                 while (true)
                 {
@@ -210,28 +227,38 @@ namespace Assets.Scripts.Birds
                             _lifeCycle.Data.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
                             Destroy(c.gameObject, 0.1f);
 
+                            resetInertia();
+
                             _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
                             birdContext.State = idlingState;
                             break;
                         }
+                        else if (result.key == BirdSignal.Grounded)
+                        {
+                            var targets = foodManager
+                                .GetComponentsInChildren<Transform>()
+                                .Skip(Global.PARENT_TRANSFORM)
+                                .ToList();
+
+                            targetFinder.UpdateTargets(targets);
+                        }
                     }
 
-                    var targets = foodManager
-                        .GetComponentsInChildren<Transform>()
-                        .Skip(Global.PARENT_TRANSFORM)
-                        .ToList();
+                    var (targetTransform, targetPosition) = targetFinder.GetHighestPriorityTarget(transform);
 
-                    targetFinder.UpdateTargets(targets);
-                    var position = positionHandler(targetFinder);
+                    if (targetTransform is null || targetPosition.y > -2)
+                    {
+                        targetPosition.y = _floorY;
+                    }
 
-                    move(position, timeStep);
+                    move(targetTransform?.position ?? targetPosition, timeStep);
 
                     if (grayScale < 1) grayScale += 0.03f;
                     _sprite.material.SetFloat("_GrayscaleAmount", grayScale);
 
                     if (runOutEnergy())
                     {
-                        _lifeCycle.State = starvingState;
+                        _lifeCycle.State = deathState;
                         break;
                     }
 

@@ -21,7 +21,8 @@ namespace Assets.Scripts.Birds
         public BirdSignal(int id, string name) : base(id, name) { }
         public static BirdSignal FoundFood = new BirdSignal(0, nameof(FoundFood));
         public static BirdSignal GrownStage1 = new BirdSignal(1, nameof(GrownStage1));
-        public static BirdSignal GrownStage2 = new BirdSignal(1, nameof(GrownStage2));
-        public static BirdSignal EnergyRegen = new BirdSignal(2, nameof(EnergyRegen));
+        public static BirdSignal GrownStage2 = new BirdSignal(2, nameof(GrownStage2));
+        public static BirdSignal EnergyRegen = new BirdSignal(3, nameof(EnergyRegen));
+        public static BirdSignal Grounded = new BirdSignal(4, nameof(Grounded));
     }
 }

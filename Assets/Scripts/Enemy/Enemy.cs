@@ -91,7 +91,7 @@ namespace Assets.Scripts.Enemy
                         && hit.transform == transform)
                     {
                         var direction = ((Vector2)transform.position - hit.point).normalized;
-                        _rigidbody.AddForce(direction * Range(10f, 20f));
+                        _rigidbody.AddForce(direction * Range(20f, 30f));
 
                         Health -= 3f;
 
