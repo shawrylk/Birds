@@ -16,12 +16,14 @@ namespace Assets.Scripts
         private TextMeshProUGUI _score;
         private Rigidbody2D _rigidbody;
         public int Value = 10;
+        private CashManager _cashManager = null;
 
         private void Awake()
         {
             _score = Global.GameObjects.GetGameObject("Score").GetComponent<TextMeshProUGUI>();
             _rigidbody = GetComponent<Rigidbody2D>();
             _rigidbody.velocity = new Vector2(0, -1f);
+            _cashManager = CashManager.Instance;
         }
 
         private void OnCollisionEnter2D(Collision2D collision)
@@ -34,11 +36,10 @@ namespace Assets.Scripts
                 }
                 else if (string.Compare(collision.gameObject.name, Global.TOP_BOUNDARY, true) == 0)
                 {
-                    if (int.TryParse(_score.text, out int currentCash))
+                    var (isDone, _) = _cashManager.Add(Value);
+                    if (isDone)
                     {
                         Destroy(gameObject);
-                        currentCash += Value;
-                        _score.text = currentCash.ToString();
                     }
                 }
             }

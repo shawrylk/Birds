@@ -11,13 +11,21 @@ using UnityEngine;
 namespace Assets.Scripts
 {
     [DefaultExecutionOrder(Global.CASH_MANAGER_ORDER)]
-    public class CashManager : LifeTimeBase.SingletonScript<FoodManager>
+    public class CashManager : BaseScript
     {
+        private static CashManager _instance = null;
+        public static CashManager Instance => _instance;
+
+        [SerializeField]
+        private TextMeshProUGUI _scoreTMP;
+
         private const float castThickness = 0.4f;
         private IInputManager _input;
-        public TextMeshProUGUI ScoreTMP;
+        private int _score;
         private void Awake()
         {
+            int.TryParse(_scoreTMP.text, out _score);
+            _instance = FindObjectOfType<CashManager>();
             _input = InputManager.Instance;
             _input.OnStartTouch += Touch;
         }
@@ -53,6 +61,21 @@ namespace Assets.Scripts
                     }
                 }
             }
+        }
+
+        public (bool isDone, int currentScore) Add(int value)
+        {
+            _scoreTMP.text = (_score += value).ToString("#,##0");
+            return (true, _score);
+        }
+        public (bool isDone, int currentScore) Minus(int value)
+        {
+            if (_score >= value)
+            {
+                _scoreTMP.text = (_score -= value).ToString("#,##0");
+                return (true, _score);
+            }
+            return (false, _score);
         }
     }
 }

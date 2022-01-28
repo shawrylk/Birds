@@ -20,13 +20,13 @@ namespace Assets.Scripts
         private const int MAX_FOOD_COUNT = 10;
         private int _foods_last_index = 0;
         public GameObject[] FoodPrefabs;
+        private CashManager _cashManager;
 
         public Button UpgradeFoodQualityButton;
         public Button UpgradeFoodCountButton;
 
         public TextMeshProUGUI UpgradeFoodQualityPriceTMP;
         public TextMeshProUGUI UpgradeFoodCountTMP;
-        public TextMeshProUGUI ScoreTMP;
 
         public int FoodIndex = 0;
         public int FoodCount = 1;
@@ -36,6 +36,7 @@ namespace Assets.Scripts
             _input.OnStartTouch += SpawnFood;
             _price = GetCurrentFood(FoodIndex).gameObject.GetComponent<Food>().Price;
             _foods_last_index = FoodPrefabs.Length - 1;
+            _cashManager = CashManager.Instance;
         }
 
         private GameObject GetCurrentFood(int index)
@@ -49,43 +50,40 @@ namespace Assets.Scripts
 
         public void UpgradeFoodQuality()
         {
-            if (int.TryParse(ScoreTMP.text, out int score))
+            var newFood = GetCurrentFood(FoodIndex + 1).GetComponent<Food>();
+            var upgradePrice = newFood.UpgradePrice;
+            var (isDone, currentCash) = _cashManager.Minus(upgradePrice);
+            if (isDone)
             {
-                var newFood = GetCurrentFood(FoodIndex + 1).GetComponent<Food>();
-                var upgradePrice = newFood.UpgradePrice;
-                _price = newFood.Price;
-                if (score >= upgradePrice)
+                FoodIndex++;
+                newFood = GetCurrentFood(FoodIndex + 1).GetComponent<Food>();
+                upgradePrice = newFood.UpgradePrice;
+                UpgradeFoodQualityPriceTMP.text = $"Food\n{upgradePrice}";
+
+                if (FoodIndex == _foods_last_index)
                 {
-                    FoodIndex++;
-                    ScoreTMP.text = (score - upgradePrice).ToString();
-
-                    newFood = GetCurrentFood(FoodIndex + 1).GetComponent<Food>();
-                    upgradePrice = newFood.UpgradePrice;
-                    UpgradeFoodQualityPriceTMP.text = $"Upgrade food\n{upgradePrice}";
-
-                    if (FoodIndex == _foods_last_index)
-                    {
-                        UpgradeFoodQualityButton.enabled = false;
-                        UpgradeFoodQualityButton.interactable = false;
-                    }
+                    UpgradeFoodQualityButton.enabled = false;
+                    UpgradeFoodQualityButton.interactable = false;
                 }
             }
         }
         public void UpgradeFoodCount()
         {
-            if (FoodCount < MAX_FOOD_COUNT
-                && int.TryParse(ScoreTMP.text, out int score)
-                && score >= 300)
+            const int FOOD_PRICE = 300;
+            if (FoodCount < MAX_FOOD_COUNT)
             {
-                FoodCount++;
-                ScoreTMP.text = (score - 300).ToString();
-                UpgradeFoodCountTMP.text = $"Food Count: {FoodCount}\n Price: 300";
-
-
-                if (FoodCount == MAX_FOOD_COUNT)
+                var (isDone, currentCash) = _cashManager.Minus(FOOD_PRICE);
+                if (isDone)
                 {
-                    UpgradeFoodCountButton.enabled = false;
-                    UpgradeFoodCountButton.interactable = false;
+                    FoodCount++;
+                    UpgradeFoodCountTMP.text = $"Count: {FoodCount}\n300";
+
+
+                    if (FoodCount == MAX_FOOD_COUNT)
+                    {
+                        UpgradeFoodCountButton.enabled = false;
+                        UpgradeFoodCountButton.interactable = false;
+                    }
                 }
             }
         }
@@ -97,20 +95,21 @@ namespace Assets.Scripts
         {
             if (FoodPrefabs != null)
             {
-                if (int.TryParse(ScoreTMP.text, out int currentCash)
-                    && currentCash >= _price
-                    && transform.childCount < FoodCount)
+                if (transform.childCount < FoodCount)
                 {
-                    var position = input.ScreenPosition.ToWorldCoord();
-                    var food =
-                        Instantiate(original: GetCurrentFood(FoodIndex),
-                        position: position,
-                        rotation: Quaternion.identity,
-                        parent: transform);
+                    var (isDone, currentCash) = _cashManager.Minus(_price);
+                    if (isDone)
+                    {
+                        var position = input.ScreenPosition.ToWorldCoord();
+                        var food =
+                            Instantiate(original: GetCurrentFood(FoodIndex),
+                            position: position,
+                            rotation: Quaternion.identity,
+                            parent: transform);
 
-                    food.name = Food.Name;
+                        food.name = Food.Name;
 
-                    ScoreTMP.text = (currentCash - _price).ToString();
+                    }
                 }
             }
         }

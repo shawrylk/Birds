@@ -39,10 +39,10 @@ namespace Assets.Scripts.Utilities
         public static readonly float UnitsPerPixel;
 
         public const int LEVEL_MANAGER_ORDER = -100;
-        public const int BOUNDARIES_ORDER = -90;
-        public const int BIRD_MANAGER_ORDER = -80;
-        public const int ENEMY_MANAGER_ORDER = -70;
-        public const int CASH_MANAGER_ORDER = -60;
+        public const int CASH_MANAGER_ORDER = -90;
+        public const int BOUNDARIES_ORDER = -80;
+        public const int BIRD_MANAGER_ORDER = -70;
+        public const int ENEMY_MANAGER_ORDER = -60;
         public const int FOOD_MANAGER_ORDER = -50;
         static Global()
         {

@@ -18,9 +18,8 @@ public class BirdManager : BaseScript
 
     [SerializeField]
     private GameObject[] _birdPrefabs = null;
-    [SerializeField]
-    private TextMeshProUGUI _scoreTMP = null;
 
+    private CashManager _cashManager = null;
     public int DefaultBirdCount = 2;
     public ConcurrentDictionary<string, List<GameObject>> AllBirds = new ConcurrentDictionary<string, List<GameObject>>();
 
@@ -34,6 +33,7 @@ public class BirdManager : BaseScript
         _boundaries = Global.Items[Global.BOUNDARIES_TAG] as Dictionary<string, Transform>;
         _spawnBird = GetSpawnBirdHandler();
         _bird_last_index = _birdPrefabs.Length - 1;
+        _cashManager = CashManager.Instance;
         Enumerable.Range(0, DefaultBirdCount)
             .ToList()
             .ForEach(num => SpawnBird(0));
@@ -49,15 +49,12 @@ public class BirdManager : BaseScript
     }
     public void SpawnBird(int index)
     {
-        if (int.TryParse(_scoreTMP.text, out int score))
+        var bird = GetBirdAtIndex(index);
+        var price = bird.GetComponent<BirdBase>().Price;
+        var (isDone, currentCash) = _cashManager.Minus(price);
+        if (isDone)
         {
-            var bird = GetBirdAtIndex(index);
-            var price = bird.GetComponent<BirdBase>().Price;
-            if (score >= price)
-            {
-                _spawnBird?.Invoke(index);
-                _scoreTMP.text = (score - price).ToString();
-            }
+            _spawnBird?.Invoke(index);
         }
     }
 

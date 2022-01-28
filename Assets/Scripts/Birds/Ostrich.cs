@@ -14,6 +14,8 @@ namespace Assets.Scripts.Birds
     {
         private BirdManager _birdManager;
         private float _floorY;
+        private float _maxHeight1 = 0.0f;
+        private float _maxHeight2 = 0.0f;
         protected override void Awake()
         {
             base.Awake();
@@ -24,8 +26,10 @@ namespace Assets.Scripts.Birds
                 .position.y;
 
             _floorY = floorY + _collider.bounds.size.y * transform.localScale.y;
-
+            _maxHeight1 = Screen.height / Global.PIXEL_PER_UNIT * 0.4f + _floorY;
+            _maxHeight2 = Screen.height / Global.PIXEL_PER_UNIT * 0.5f + _floorY;
             _birdManager = BirdManager.Instance;
+
             ProduceCash();
         }
 
@@ -116,7 +120,7 @@ namespace Assets.Scripts.Birds
                 options.X = (10f, 10f, 11f);
                 options.Y = (70f, 85f, 45f);
                 options.ClampX = (-5f, 5f);
-                options.ClampY = (-36f, 36f);
+                options.ClampY = (-21f, 21f);
                 options.Transform = transform;
                 options.Rigidbody2D = _rigidbody;
             });
@@ -168,7 +172,7 @@ namespace Assets.Scripts.Birds
 
                     var (targetTransform, targetPosition) = targetFinder.GetHighestPriorityTarget(transform);
 
-                    if (targetTransform is null || targetPosition.y > -2)
+                    if (targetTransform is null || targetPosition.y > _maxHeight1)
                     {
                         targetPosition.y = _floorY;
                     }
@@ -194,7 +198,7 @@ namespace Assets.Scripts.Birds
                 options.X = (10f, 10f, 11f);
                 options.Y = (80f, 90f, 50f);
                 options.ClampX = (-7f, 7f);
-                options.ClampY = (-48f, 48f);
+                options.ClampY = (-28f, 28f);
                 options.Transform = transform;
                 options.Rigidbody2D = _rigidbody;
             });
@@ -246,7 +250,7 @@ namespace Assets.Scripts.Birds
 
                     var (targetTransform, targetPosition) = targetFinder.GetHighestPriorityTarget(transform);
 
-                    if (targetTransform is null || targetPosition.y > -2)
+                    if (targetTransform is null || targetPosition.y > _maxHeight2)
                     {
                         targetPosition.y = _floorY;
                     }
