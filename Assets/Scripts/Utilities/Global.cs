@@ -21,6 +21,7 @@ namespace Assets.Scripts.Utilities
         public const string UI_TAG = "UI";
         public const string ENEMY_MANAGER_TAG = "EnemyManager";
         public const string ENEMY_TAG = "Enemy";
+        public const string SMALL_FISH_TAG = "SmallFish";
 
         public const string BIRDS_MARK_LAYER = "Birds";
 

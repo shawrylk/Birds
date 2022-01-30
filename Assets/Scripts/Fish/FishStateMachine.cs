@@ -10,9 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Assets.Scripts.Birds
+namespace Assets.Scripts.Fishes
 {
-    public class BirdContextState : State
+    public class FishContextState : State
     {
         public new Enumeration ID
         {
@@ -20,23 +20,23 @@ namespace Assets.Scripts.Birds
             set => base.ID = value;
         }
 
-        public Func<BirdContext, IEnumerator> Coroutine
+        public Func<FishContext, IEnumerator> Coroutine
         {
             get => base.Couroutine;
             set => base.Couroutine = (Func<Context, IEnumerator>)value;
         }
     }
-    public class BirdContextData
+    public class FishContextData
     {
-        public ConcurrentQueue<(BirdSignal key, object value)> Channel { get; set; } = new ConcurrentQueue<(BirdSignal, object)>();
+        public ConcurrentQueue<(FishSignal key, object value)> Channel { get; set; } = new ConcurrentQueue<(FishSignal, object)>();
     }
 
-    public class BirdContext : Context
+    public class FishContext : Context
     {
-        public BirdContextData Data { get; set; }
-        public new BirdContextState State
+        public FishContextData Data { get; set; }
+        public new FishContextState State
         {
-            get => base.State as BirdContextState;
+            get => base.State as FishContextState;
             set
             {
                 if (base.State != value)
@@ -48,9 +48,9 @@ namespace Assets.Scripts.Birds
                 }
             }
         }
-        public new Func<(BirdContextState oldState, BirdContextState newState), bool> OnStateChanged;
-        public BirdContext(MonoBehaviour owner) : base(owner) { }
-        public void Run(BirdContextData data, BirdContextState state)
+        public new Func<(FishContextState oldState, FishContextState newState), bool> OnStateChanged;
+        public FishContext(MonoBehaviour owner) : base(owner) { }
+        public void Run(FishContextData data, FishContextState state)
         {
             Data = data;
             base.Run(state);

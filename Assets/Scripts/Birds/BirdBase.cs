@@ -18,10 +18,10 @@ namespace Assets.Scripts.Birds
         public int Price = 100;
         public float EnergyConsumePerSecond = 10;
         public GameObject[] CashPrefabs;
+        protected BirdContext _lifeCycle = null;
 
         protected Channel _foodChannel = null;
-        protected string _foodTag = Food.Name;
-
+        protected List<string> _foodNames = new List<string> { Food.Name };
         protected override void Awake()
         {
             base.Awake();
@@ -30,7 +30,7 @@ namespace Assets.Scripts.Birds
 
         protected override void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.gameObject.name == _foodTag)
+            if (_foodNames.Contains(collision.gameObject.name))
             {
                 _foodChannel.Enqueue((
                     signal: BirdSignal.FoundFood,

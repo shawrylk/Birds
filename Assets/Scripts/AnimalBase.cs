@@ -13,7 +13,6 @@ namespace Assets.Scripts
     {
         protected Rigidbody2D _rigidbody = null;
         protected SpriteRenderer _sprite = null;
-        protected BirdContext _lifeCycle = null;
         protected Animator _animator = null;
         protected Collider2D _collider = null;
 

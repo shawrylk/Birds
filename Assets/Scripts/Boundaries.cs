@@ -22,7 +22,7 @@ public class Boundaries : MonoBehaviour
     }
     private void SetUpBoundaries(Dictionary<string, Transform> boundaries, float unit)
     {
-        var topOffset = -150.ToUnit();
+        var topOffset = -200.ToUnit();
         var offset = 0.5f;
         var heightInUnit = Screen.height * unit;
         var widthInUnit = Screen.width * unit;

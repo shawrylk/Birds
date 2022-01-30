@@ -1,4 +1,6 @@
-﻿using Assets.Scripts.Utilities;
+﻿using Assets.Contracts;
+using Assets.Scripts.Fishes;
+using Assets.Scripts.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,14 +14,21 @@ namespace Assets.Scripts.Birds
 {
     public class Crow : BirdBase
     {
+        private int _foodIndex = 0;
         private BirdManager _birdManager;
+        private FishManager _fishManager;
         protected override void Awake()
         {
             //var birdMask = LayerMask.GetMask(Global.BIRDS_MARK_LAYER);
             //Physics2D.IgnoreLayerCollision(birdMask, birdMask, false);
             base.Awake();
             _birdManager = BirdManager.Instance;
-            _foodTag = Pigeon.Name;
+            _fishManager = FishManager.Instance;
+            _foodNames = new List<string>{
+                FishBase.Name2,
+                FishBase.Name,
+                Pigeon.Name
+            };
             ProduceCash();
         }
         private void ProduceCash()
@@ -133,7 +142,9 @@ namespace Assets.Scripts.Birds
                             && result.value is Collider2D c
                             && c != null)
                         {
-                            var energy = c.gameObject.GetComponent<Pigeon>().Energy;
+                            if (_foodIndex != _foodNames.IndexOf(c.name)) continue;
+
+                            var energy = c.gameObject.GetComponent<IFood>().Energy;
                             _lifeCycle.Data.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
 
                             birdContext.State = idlingState;
@@ -144,12 +155,29 @@ namespace Assets.Scripts.Birds
                             break;
                         }
                     }
-                    var listSmallPigeons = default(List<GameObject>);
+                    var listFood = default(List<GameObject>);
+                    var targets = default(List<Transform>);
 
-                    _birdManager.AllBirds
-                        .TryGetValue(Pigeon.Name, out listSmallPigeons);
+                    _foodIndex = 0;
+                    while (_foodIndex < _foodNames.Count)
+                    {
+                        _fishManager.AllFishes
+                            .TryGetValue(_foodNames[_foodIndex], out listFood);
 
-                    var targets = listSmallPigeons?.Select(g => g.transform)?.ToList();
+                        if (listFood is null
+                            || listFood.Count == 0)
+                        {
+                            _foodIndex++;
+                            continue;
+                        }
+
+                        targets = listFood
+                            ?.Where(g => g != null)
+                            ?.Select(g => g.transform)
+                            ?.ToList();
+
+                        break;
+                    }
 
                     targetFinder.UpdateTargets(targets);
                     var position = positionHandler(targetFinder);

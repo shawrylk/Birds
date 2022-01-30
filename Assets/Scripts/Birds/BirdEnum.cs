@@ -9,7 +9,7 @@ namespace Assets.Scripts.Birds
 {
     public class BirdEnum : Enumeration
     {
-        public BirdEnum(int id, string name) : base(id, name) { }
+        private BirdEnum(int id, string name) : base(id, name) { }
         public static BirdEnum Idling = new BirdEnum(0, nameof(Idling));
         public static BirdEnum Hunting = new BirdEnum(1, nameof(Hunting));
         public static BirdEnum Starving = new BirdEnum(2, nameof(Starving));
@@ -18,7 +18,7 @@ namespace Assets.Scripts.Birds
 
     public class BirdSignal : Enumeration
     {
-        public BirdSignal(int id, string name) : base(id, name) { }
+        private BirdSignal(int id, string name) : base(id, name) { }
         public static BirdSignal FoundFood = new BirdSignal(0, nameof(FoundFood));
         public static BirdSignal GrownStage1 = new BirdSignal(1, nameof(GrownStage1));
         public static BirdSignal GrownStage2 = new BirdSignal(2, nameof(GrownStage2));
