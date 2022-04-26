@@ -16,6 +16,8 @@ TagManager:
   - Score
   - Enemy
   - EnemyManager
+  - Fish
+  - WaterSurface
   layers:
   - Default
   - TransparentFX
@@ -28,8 +30,8 @@ TagManager:
   - Enemy
   - Predator
   - Boundaries
-  - 
-  - 
+  - Fishes
+  - WaterSurface
   - 
   - 
   - 

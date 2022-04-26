@@ -28,7 +28,7 @@ namespace Assets.Scripts
             _sprite.flipX = _rigidbody.velocity.x < 0;
         }
 
-        private void OnTriggerStay2D(Collider2D collision)
+        protected virtual void OnTriggerStay2D(Collider2D collision)
         {
             const float force = 50f;
             if (collision.gameObject.CompareTag(Global.BOUNDARY_TAG))

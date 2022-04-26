@@ -15,24 +15,50 @@ namespace Assets.Scripts.Birds
 {
     public partial class BirdBase : AnimalBase
     {
-        public int Price = 100;
-        public float EnergyConsumePerSecond = 10;
-        public GameObject[] CashPrefabs;
-        protected BirdContext _lifeCycle = null;
+        [SerializeField] public int Price = 100;
+        [SerializeField] protected float _energyConsumePerSecond = 30;
+        [SerializeField] protected GameObject[] _cashPrefabs;
+        protected BirdConductor _conductor = null;
 
-        protected Channel _foodChannel = null;
+        /// <summary>
+        /// Uses by states
+        /// </summary>
+        public Channel CooperativeChannel = null;
+
+        /// <summary>
+        /// Uses by state conductor
+        /// </summary>
+        public Channel PreemptiveChannel = null;
         protected List<string> _foodNames = new List<string> { Food.Name };
         protected override void Awake()
         {
+            PreemptiveChannel = new Channel();
             base.Awake();
-            StartLifeCycleOfBird();
+            StartConductor();
+        }
+
+        protected override void Update()
+        {
+            if (PreemptiveChannel.TryDequeue(out var result))
+            {
+                if (result.signal == BirdSignal.Captured)
+                {
+                    _conductor.ChangeState(
+                        ListStates.FirstOrDefault(s => s.ID == BirdEnum.Captured),
+                        isForce: true);
+                    CooperativeChannel.Enqueue((
+                        signal: BirdSignal.Captured,
+                        data: result.data));
+                }
+            }
+            base.Update();
         }
 
         protected override void OnTriggerEnter2D(Collider2D collision)
         {
             if (_foodNames.Contains(collision.gameObject.name))
             {
-                _foodChannel.Enqueue((
+                CooperativeChannel.Enqueue((
                     signal: BirdSignal.FoundFood,
                     data: collision));
             }
@@ -41,15 +67,15 @@ namespace Assets.Scripts.Birds
                 base.OnTriggerEnter2D(collision);
             }
         }
-        protected virtual void StartLifeCycleOfBird()
+        protected virtual void StartConductor()
         {
-            _lifeCycle = new BirdContext(this);
-            _lifeCycle.Run(
-                data: new BirdContextData(),
-                state: GetAllBirdStates()
-                    .ToList()
+            ListStates = GetAllBirdStates().ToList();
+            _conductor = new BirdConductor(this);
+            _conductor.Run(
+                data: new BirdContext(),
+                state: ListStates
                     .First(s => s.ID == BirdEnum.Hunting));
-            _foodChannel = _lifeCycle.Data.Channel;
+            CooperativeChannel = _conductor.Context.Channel;
         }
 
     }

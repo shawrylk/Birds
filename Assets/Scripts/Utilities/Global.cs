@@ -29,6 +29,7 @@ namespace Assets.Scripts.Utilities
         public const string RIGHT_BOUNDARY = "right";
         public const string TOP_BOUNDARY = "top";
         public const string BOTTOM_BOUNDARY = "bottom";
+        public const string WATER_SURFACE_BOUNDARY = "surface";
         public const string UNITS_PER_PIXEL = "UnitsPerPixel";
 
         public const int PARENT_TRANSFORM = 1;

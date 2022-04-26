@@ -11,7 +11,7 @@ namespace Assets.Scripts.Fishes
 {
     public partial class FishBase : AnimalBase, IFood
     {
-        private float EnergyConsumePerSecond = 10f;
+        private float _energyConsumePerSecond = 30f;
         private FishManager _fishManager;
         private BirdManager _birdManager;
 
@@ -19,7 +19,7 @@ namespace Assets.Scripts.Fishes
         public const string Name2 = "MediumFish";
         protected Channel _foodChannel = null;
         protected List<string> _foodNames = new List<string> { Food.Name };
-        protected FishContext _lifeCycle = null;
+        protected FishConductor _lifeCycle = null;
         private int _energy = 150;
         public int Energy
         {
@@ -50,9 +50,9 @@ namespace Assets.Scripts.Fishes
         }
         protected virtual void StartLifeCycleOfFish()
         {
-            _lifeCycle = new FishContext(this);
+            _lifeCycle = new FishConductor(this);
             _lifeCycle.Run(
-                data: new FishContextData(),
+                data: new FishContext(),
                 state: GetAllFishStates()
                     .ToList()
                     .First(s => s.ID == FishEnum.HuntingStage1));

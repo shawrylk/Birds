@@ -16,8 +16,8 @@ namespace Assets.Scripts
         private static FishManager _instance = null;
         public static FishManager Instance => _instance;
 
-        [SerializeField]
-        private GameObject[] _fishPrefabs = null;
+        [SerializeField] private GameObject[] _fishPrefabs = null;
+        [SerializeField] private Transform[] _transforms = null;
 
         private CashManager _cashManager = null;
         public int DefaultFishCount = 1;
@@ -29,9 +29,10 @@ namespace Assets.Scripts
 
         private void Awake()
         {
+            SetupSpawnPositions();
             _instance = FindObjectOfType<FishManager>();
             _boundaries = Global.Items[Global.BOUNDARIES_TAG] as Dictionary<string, Transform>;
-            _spawnFish = GetSpawnBirdHandler();
+            _spawnFish = GetSpawnFishHandler();
             _fish_last_index = _fishPrefabs.Length - 1;
             _cashManager = CashManager.Instance;
             Enumerable.Range(0, DefaultFishCount)
@@ -42,8 +43,8 @@ namespace Assets.Scripts
 
         private IEnumerator SpawnFishCoroutine()
         {
-            yield return new WaitForSeconds(60f);
-            var yieldTimeStep = new WaitForSeconds(15f);
+            yield return new WaitForSeconds(120f);
+            var yieldTimeStep = new WaitForSeconds(20f);
             while (true)
             {
                 SpawnFish(0);
@@ -59,13 +60,31 @@ namespace Assets.Scripts
             }
             return _fishPrefabs[_fish_last_index];
         }
+        private void SetupSpawnPositions()
+        {
+            var unit = Global.UnitsPerPixel;
+            var heightInUnit = Screen.height * unit;
+            var widthInUnit = Screen.width * unit;
+            var count = _transforms.Length;
+            var posX = widthInUnit / count;
+            var xOffset = posX / 2;
+            var yOffset = 1f;
+            for (var i = 0; i < count; i++)
+            {
+                _transforms[i].localPosition = new Vector3(widthInUnit / -2 + posX * i + xOffset, heightInUnit / -2 + yOffset, 0);
+            }
+        }
+        private Transform GetRandomSpawnPosition()
+        {
+            return _transforms[UnityEngine.Random.Range(0, _transforms.Length)];
+        }
         public void SpawnFish(int index)
         {
             var bird = GetFishAtIndex(index);
             _spawnFish?.Invoke(index);
         }
 
-        private Action<int> GetSpawnBirdHandler()
+        private Action<int> GetSpawnFishHandler()
         {
             var offset = 2f;
             var horizontalMargin = new Vector3(offset, 0, 0);
@@ -73,7 +92,7 @@ namespace Assets.Scripts
             var left = _boundaries[Global.LEFT_BOUNDARY].position + horizontalMargin;
             var right = _boundaries[Global.RIGHT_BOUNDARY].position - horizontalMargin;
             var bottom = _boundaries[Global.BOTTOM_BOUNDARY].position + verticalMargin;
-            gameObject.transform.position = _boundaries[Global.TOP_BOUNDARY].position;
+            //gameObject.transform.position = _boundaries[Global.TOP_BOUNDARY].position;
 
             return (int index) =>
             {
@@ -84,7 +103,7 @@ namespace Assets.Scripts
 
                     var newFish = Instantiate(
                        original: GetFishAtIndex(index),
-                       position: position,
+                       position: GetRandomSpawnPosition().position,
                        rotation: Quaternion.identity,
                        parent: gameObject.transform);
 
@@ -95,7 +114,7 @@ namespace Assets.Scripts
 
                     AllFishes.Add(newFish);
 
-                    newFish.GetComponent<Rigidbody2D>().AddForce(Vector2.up * UnityEngine.Random.Range(20f, 40f));
+                    newFish.GetComponent<Rigidbody2D>().AddForce(Vector2.up * 7f);
                 }
             };
         }

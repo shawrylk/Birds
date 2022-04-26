@@ -1,67 +1,83 @@
-﻿using Assets.Scripts.Utilities;
+﻿using Assets.Scripts.Fish;
+using Assets.Scripts.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Assets.Scripts.Lock.Guard;
 using static UnityEngine.Random;
 
 namespace Assets.Scripts.Birds
 {
     public partial class BirdBase : AnimalBase
     {
+        public List<BirdState> ListStates;
         #region Local Variables
-        protected BirdContextState idlingState = null;
-        protected BirdContextState huntingState = null;
-        protected BirdContextState starvingState = null;
-        protected BirdContextState deathState = null;
+        protected BirdState idlingState = null;
+        protected BirdState huntingState = null;
+        protected BirdState starvingState = null;
+        protected BirdState deathState = null;
+        protected BirdState capturedState = null;
         #endregion
 
         #region Local Functions
-        BirdContextState GetIdlingState()
+        BirdState GetIdlingState()
         {
-            idlingState = new BirdContextState
+            idlingState = new BirdState
             {
                 ID = BirdEnum.Idling,
-                Couroutine = HandleIdlingState()
             };
+            idlingState.Coroutine = HandleIdlingState(idlingState);
 
             return idlingState;
         }
-        BirdContextState GetHuntingStae()
+        BirdState GetHuntingStae()
         {
-            huntingState = new BirdContextState
+            huntingState = new BirdState
             {
                 ID = BirdEnum.Hunting,
-                Couroutine = HandleHuntingState()
             };
+            huntingState.Coroutine = HandleHuntingState(huntingState);
 
             return huntingState;
         }
-        BirdContextState GetStarvingState()
+        BirdState GetStarvingState()
         {
-            starvingState = new BirdContextState
+            starvingState = new BirdState
             {
                 ID = BirdEnum.Starving,
-                Couroutine = HandleStarvingState()
             };
+            starvingState.Coroutine = HandleStarvingState(starvingState);
 
             return starvingState;
         }
 
-        BirdContextState GetDeathState()
+        BirdState GetDeathState()
         {
-            deathState = new BirdContextState
+            deathState = new BirdState
             {
                 ID = BirdEnum.Death,
-                Couroutine = HandleDeathState()
             };
+            deathState.Coroutine = HandleDeathState(deathState);
 
             return deathState;
         }
-        protected virtual Func<Context, IEnumerator> HandleIdlingState()
+        BirdState GetCapturedState()
+        {
+            capturedState = new BirdState
+            {
+                ID = BirdEnum.Captured,
+            };
+            capturedState.Coroutine = HandleCapturedState(capturedState);
+
+            return capturedState;
+        }
+
+        protected virtual Func<IEnumerator> HandleIdlingState(BirdState state)
         {
             var positionHandler = transform.GetPositionResolver();
             //var (pidHandler, resetPid) = transform.GetPidHandler(10f, 10f, 11f, -7f, 7f, _rigidbody);
@@ -83,12 +99,12 @@ namespace Assets.Scripts.Birds
 
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
-            var timeOutHz = sToHz(Range(5, 7));
+            var timeOutHz = sToHz(Range(6, 8));
 
-            IEnumerator idlingHandler(Context context)
+            IEnumerator idlingHandler()
             {
-                var birdContext = context as BirdContext;
-                if (birdContext is null) yield return null;
+                var birdConductor = state?.Conductor;
+                if (birdConductor is null) yield return null;
 
                 var time = 0;
 
@@ -131,7 +147,7 @@ namespace Assets.Scripts.Birds
 
                 while (true)
                 {
-                    if (birdContext.Data.Channel.TryDequeue(out var result))
+                    if (birdConductor.Context.Channel.TryDequeue(out var result))
                     {
                         if (result.key == BirdSignal.GrownStage1)
                         {
@@ -149,7 +165,7 @@ namespace Assets.Scripts.Birds
                         }
                         else if (result.key == BirdSignal.EnergyRegen)
                         {
-                            var Energytime = Convert.ToInt32(result.value) / EnergyConsumePerSecond;
+                            var Energytime = Convert.ToInt32(result.value) / _energyConsumePerSecond * Range(0.7f, 1f);
                             timeOutHz = sToHz(Energytime);
                         }
                     }
@@ -170,7 +186,8 @@ namespace Assets.Scripts.Birds
 
                     if (++time >= timeOutHz)
                     {
-                        birdContext.State = huntingState;
+                        UnityEngine.Debug.Log("Change to hunting");
+                        birdConductor.ChangeState(huntingState);
                         break;
                     }
 
@@ -179,11 +196,11 @@ namespace Assets.Scripts.Birds
             }
             return idlingHandler;
         }
-        protected virtual Func<Context, IEnumerator> HandleHuntingState()
+        protected virtual Func<IEnumerator> HandleHuntingState(BirdState state)
         {
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
-            var timeOutHz = sToHz(Range(7, 10));
+            var timeOutHz = sToHz(Range(6, 8));
             var positionHandler = transform.GetPositionResolver();
             var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
             {
@@ -197,10 +214,10 @@ namespace Assets.Scripts.Birds
             var targetFinder = new TargetFinder();
 
 
-            IEnumerator huntingHandler(Context context)
+            IEnumerator huntingHandler()
             {
-                var birdContext = context as BirdContext;
-                if (birdContext is null) yield return null;
+                var birdConductor = state.Conductor;
+                if (birdConductor is null) yield return null;
                 var time = 0;
 
                 _animator.enabled = true;
@@ -208,17 +225,16 @@ namespace Assets.Scripts.Birds
                 while (true)
                 {
                     yield return new WaitForSeconds(timeStep);
-
-                    if (birdContext.Data.Channel.TryDequeue(out var result))
+                    if (birdConductor.Context.Channel.TryDequeue(out var result))
                     {
                         if (result.key == BirdSignal.FoundFood
                             && result.value is Collider2D c
                             && c != null)
                         {
                             var energy = c.gameObject.GetComponent<Food>().Energy;
-                            _lifeCycle.Data.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
+                            _conductor.Context.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
 
-                            birdContext.State = idlingState;
+                            birdConductor.ChangeState(idlingState);
                             _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
 
                             Destroy(c.gameObject, 0.1f);
@@ -247,7 +263,7 @@ namespace Assets.Scripts.Birds
 
                     if (time++ >= timeOutHz)
                     {
-                        _lifeCycle.State = starvingState;
+                        _conductor.ChangeState(starvingState);
                         break;
                     }
                 }
@@ -255,11 +271,11 @@ namespace Assets.Scripts.Birds
             return huntingHandler;
         }
 
-        protected virtual Func<Context, IEnumerator> HandleStarvingState()
+        protected virtual Func<IEnumerator> HandleStarvingState(BirdState state)
         {
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
-            var timeOutHz = sToHz(Range(7, 10));
+            var timeOutHz = sToHz(Range(7, 9));
             var positionHandler = transform.GetPositionResolver();
             var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
             {
@@ -272,11 +288,10 @@ namespace Assets.Scripts.Birds
             });
             var targetFinder = new TargetFinder();
 
-
-            IEnumerator starvingHandler(Context context)
+            IEnumerator starvingHandler()
             {
-                var birdContext = context as BirdContext;
-                if (birdContext is null) yield return null;
+                var birdConductor = state.Conductor;
+                if (birdConductor is null) yield return null;
                 var time = 0;
                 var grayScale = 0.0f;
 
@@ -287,17 +302,16 @@ namespace Assets.Scripts.Birds
                 while (true)
                 {
                     yield return new WaitForSeconds(timeStep);
-
-                    if (birdContext.Data.Channel.TryDequeue(out var result))
+                    if (birdConductor.Context.Channel.TryDequeue(out var result))
                     {
                         if (result.key == BirdSignal.FoundFood
                             && result.value is Collider2D c
                             && c != null)
                         {
                             var energy = c.gameObject.GetComponent<Food>().Energy;
-                            _lifeCycle.Data.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
+                            _conductor.Context.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
 
-                            birdContext.State = idlingState;
+                            birdConductor.ChangeState(idlingState);
                             _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
 
                             Destroy(c.gameObject, 0.1f);
@@ -320,7 +334,7 @@ namespace Assets.Scripts.Birds
 
                     if (time++ >= timeOutHz)
                     {
-                        _lifeCycle.State = deathState;
+                        _conductor.ChangeState(deathState);
                         break;
                     }
                 }
@@ -328,16 +342,16 @@ namespace Assets.Scripts.Birds
             return starvingHandler;
         }
 
-        protected virtual Func<Context, IEnumerator> HandleDeathState()
+        protected virtual Func<IEnumerator> HandleDeathState(BirdState state)
         {
             var timeStep = 0.1f;
             var fadeOut = 1.0f;
             var fadeOutStep = 0.1f;
-            IEnumerator deathHandler(Context context)
+            IEnumerator deathHandler()
             {
-                var birdContext = context as BirdContext;
-                if (birdContext is null) yield return null;
-                //print($"{birdContext.State.ID}");
+                var birdConductor = state.Conductor;
+                if (birdConductor is null) yield return null;
+                //print($"{birdConductor.State.ID}");
 
                 _animator.enabled = false;
                 _collider.enabled = false;
@@ -356,9 +370,61 @@ namespace Assets.Scripts.Birds
             }
             return deathHandler;
         }
+
+        protected virtual Func<IEnumerator> HandleCapturedState(BirdState state)
+        {
+            IEnumerator capturedHandler()
+            {
+                var birdConductor = state.Conductor;
+                if (birdConductor is null) yield return null;
+                //print($"{birdConductor.State.ID}");
+                _collider.enabled = false;
+                enabled = false;
+                using var releaser = new Releaser(() =>
+                {
+                    _collider.enabled = true;
+                    enabled = true;
+                });
+                var bubble = default(Bubble);
+                var gotBubble = false;
+                var startTime = Time.time;
+                while (true)
+                {
+                    if (birdConductor.Context.Channel.TryDequeue(out var result))
+                    {
+                        if (result.key == BirdSignal.Captured
+                                  && result.value is Bubble b
+                                  && b.transform != null)
+                        {
+                            bubble = b;
+                            gotBubble = true;
+                        }
+
+                    }
+                    if (gotBubble && bubble == null)
+                    {
+                        birdConductor.ChangeState(starvingState);
+                        break;
+                    }
+                    else if (bubble != null)
+                    {
+                        transform.position = Vector3.MoveTowards(transform.position, bubble.transform.position, 1f);
+                        if (Time.time - startTime > bubble.CaptureTime)
+                        {
+                            Destroy(bubble.gameObject);
+                            birdConductor.ChangeState(deathState);
+                            break;
+                        }
+                    }
+                    yield return null;
+                }
+            }
+            return capturedHandler;
+        }
+
         #endregion
 
-        public IEnumerable<BirdContextState> GetAllBirdStates()
+        public IEnumerable<BirdState> GetAllBirdStates()
         {
             yield return GetIdlingState();
 
@@ -367,6 +433,8 @@ namespace Assets.Scripts.Birds
             yield return GetStarvingState();
 
             yield return GetDeathState();
+
+            yield return GetCapturedState();
         }
     }
 }

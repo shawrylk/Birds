@@ -14,10 +14,14 @@ namespace Assets.Scripts.Utilities
     public abstract class State
     {
         protected Enumeration ID;
-        public Func<Context, IEnumerator> Couroutine { get; set; }
+        public MonoBehaviour Owner { get; set; }
+        public StateConductor Conductor { get; set; }
+        public Func<IEnumerator> Coroutine { get; set; }
+        public Func<(State oldState, State newState), bool> OnStateChanged;
     }
-    public abstract class Context
+    public abstract class StateConductor
     {
+        protected Coroutine _coroutine;
         public Func<(State oldState, State newState), bool> OnStateChanged;
         protected State State
         {
@@ -26,29 +30,46 @@ namespace Assets.Scripts.Utilities
             {
                 if (_state != value)
                 {
-                    if (OnStateChanged?.Invoke((_state, value)) != true)
+                    var oldState = _state;
+                    if (oldState?.OnStateChanged?.Invoke((oldState, value)) != true)
                     {
                         _state = value;
+                        _state.Conductor = this;
+                        _state.Owner = oldState?.Owner ?? owner;
+                        _state?.OnStateChanged?.Invoke((oldState, value));
                     }
                 }
             }
         }
         private State _state;
-        private MonoBehaviour _owner;
-        public Context(MonoBehaviour owner)
+        protected MonoBehaviour owner;
+        public StateConductor(MonoBehaviour owner)
         {
-            _owner = owner;
+            this.owner = owner;
         }
         protected void Run(State state)
         {
             State = state;
-            _owner.StartCoroutine(Coroutine());
+            State.Owner = owner;
+            _coroutine = owner.StartCoroutine(Coroutine());
         }
-        private IEnumerator Coroutine()
+        protected virtual IEnumerator Coroutine()
         {
             while (true)
             {
-                yield return State.Couroutine?.Invoke(this);
+                yield return State.Coroutine?.Invoke();
+            }
+        }
+        public virtual void ChangeState(State state, bool isForce = false)
+        {
+            if (state != null)
+            {
+                State = state;
+                if (isForce)
+                {
+                    owner.StopCoroutine(_coroutine);
+                    _coroutine = owner.StartCoroutine(Coroutine());
+                }
             }
         }
     }

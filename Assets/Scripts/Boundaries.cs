@@ -38,5 +38,9 @@ public class Boundaries : MonoBehaviour
 
         boundaries[Global.BOTTOM_BOUNDARY].transform.position = new Vector3(0, heightInUnit / -2 - offset, 0);
         boundaries[Global.BOTTOM_BOUNDARY].transform.localScale = new Vector3(widthInUnit + offset, 1, 0);
+
+        boundaries[Global.WATER_SURFACE_BOUNDARY].transform.position = new Vector3(0, (heightInUnit / -2 - offset) * 0.5f, 0);
+        boundaries[Global.WATER_SURFACE_BOUNDARY].transform.localScale = new Vector3(widthInUnit + offset, 1, 0);
+
     }
 }

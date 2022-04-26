@@ -13,53 +13,53 @@ namespace Assets.Scripts.Fishes
 {
     public partial class FishBase : AnimalBase
     {
-        protected FishContextState huntingStage1State = null;
-        protected FishContextState huntingStage2State = null;
-        protected FishContextState beingAttackedState = null;
-        protected FishContextState deathState = null;
-        FishContextState GetHuntingStage1State()
+        protected FishState huntingStage1State = null;
+        protected FishState huntingStage2State = null;
+        protected FishState beingAttackedState = null;
+        protected FishState deathState = null;
+        FishState GetHuntingStage1State()
         {
-            huntingStage1State = new FishContextState
+            huntingStage1State = new FishState
             {
                 ID = FishEnum.HuntingStage1,
-                Couroutine = HandleHuntingStage1State()
             };
+            huntingStage1State.Coroutine = HandleHuntingStage1State(huntingStage1State);
 
             return huntingStage1State;
         }
-        FishContextState GetHuntingStage2State()
+        FishState GetHuntingStage2State()
         {
-            huntingStage2State = new FishContextState
+            huntingStage2State = new FishState
             {
                 ID = FishEnum.HuntingStage2,
-                Couroutine = HandleHuntingStage2State()
             };
+            huntingStage2State.Coroutine = HandleHuntingStage2State(huntingStage2State);
 
             return huntingStage2State;
         }
 
-        FishContextState GetBeingAttackedState()
+        FishState GetBeingAttackedState()
         {
-            beingAttackedState = new FishContextState
+            beingAttackedState = new FishState
             {
                 ID = FishEnum.BeingAttacked,
-                Couroutine = HandleBeingAttackedState()
             };
+            beingAttackedState.Coroutine = HandleBeingAttackedState(beingAttackedState);
 
             return beingAttackedState;
         }
 
-        FishContextState GetDeathState()
+        FishState GetDeathState()
         {
-            deathState = new FishContextState
+            deathState = new FishState
             {
                 ID = FishEnum.Death,
-                Couroutine = HandleDeathState()
             };
+            deathState.Coroutine = HandleDeathState(deathState);
 
             return deathState;
         }
-        protected virtual Func<Context, IEnumerator> HandleHuntingStage1State()
+        protected virtual Func<IEnumerator> HandleHuntingStage1State(FishState state)
         {
             var (move, resetInertia) = PidExtensions.GetPidHandler(options =>
             {
@@ -84,9 +84,9 @@ namespace Assets.Scripts.Fishes
 
             var foodManager = Global.GameObjects.GetGameObject(Global.FOOD_MANAGER_TAG);
             var ateFoodCount = 0;
-            IEnumerator huntingHandler(Context context)
+            IEnumerator huntingHandler()
             {
-                var fishContext = context as FishContext;
+                var fishContext = state.Conductor;
                 if (fishContext is null) yield return null;
 
                 //var (regenEnergy, runOutEnergy) = EnergyConsumePerSecond.GetEnergyHanlder(sToHz(Range(50, 70)), sToHz);
@@ -143,7 +143,7 @@ namespace Assets.Scripts.Fishes
             }
             return huntingHandler;
         }
-        protected virtual Func<Context, IEnumerator> HandleHuntingStage2State()
+        protected virtual Func<IEnumerator> HandleHuntingStage2State(FishState state)
         {
             var (move, resetInertia) = PidExtensions.GetPidHandler(options =>
             {
@@ -167,12 +167,12 @@ namespace Assets.Scripts.Fishes
             var yieldTimeStep = new WaitForSeconds(timeStep);
 
             var coolDown = 0f;
-            IEnumerator huntingHandler(Context context)
+            IEnumerator huntingHandler()
             {
-                var fishContext = context as FishContext;
+                var fishContext = state.Conductor;
                 if (fishContext is null) yield return null;
 
-                var (regenEnergy, runOutEnergy) = EnergyConsumePerSecond.GetEnergyHanlder(sToHz(Range(50, 70)), sToHz);
+                var (regenEnergy, runOutEnergy) = _energyConsumePerSecond.GetEnergyHanlder(sToHz(Range(50, 70)), sToHz);
 
                 var hzedOut = sToHz(Range(1.7f, 2.3f));
                 //var getRandomPosition = randomPositionHandler.SampleAt(hzedOut);
@@ -223,17 +223,17 @@ namespace Assets.Scripts.Fishes
         }
 
 
-        protected virtual Func<Context, IEnumerator> HandleBeingAttackedState()
+        protected virtual Func<IEnumerator> HandleBeingAttackedState(FishState state)
         {
-            IEnumerator beingAttackedHandler(Context context) { yield return null; }
+            IEnumerator beingAttackedHandler() { yield return null; }
             return beingAttackedHandler;
         }
-        protected virtual Func<Context, IEnumerator> HandleDeathState()
+        protected virtual Func<IEnumerator> HandleDeathState(FishState state)
         {
-            IEnumerator deathHandler(Context context) { yield return null; }
+            IEnumerator deathHandler() { yield return null; }
             return deathHandler;
         }
-        public IEnumerable<FishContextState> GetAllFishStates()
+        public IEnumerable<FishState> GetAllFishStates()
         {
             yield return GetHuntingStage1State();
 

@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Fishes
 {
-    public class FishContextState : State
+    public class FishState : State
     {
         public new Enumeration ID
         {
@@ -20,40 +20,60 @@ namespace Assets.Scripts.Fishes
             set => base.ID = value;
         }
 
-        public Func<FishContext, IEnumerator> Coroutine
+        public new FishConductor Conductor { get; set; }
+        public new Func<IEnumerator> Coroutine
         {
-            get => base.Couroutine;
-            set => base.Couroutine = (Func<Context, IEnumerator>)value;
+            get => base.Coroutine;
+            set => base.Coroutine = (Func<IEnumerator>)value;
         }
+        public new Func<(FishState oldState, FishState newState), bool> OnStateChanged;
+
     }
-    public class FishContextData
+    public class FishContext
     {
         public ConcurrentQueue<(FishSignal key, object value)> Channel { get; set; } = new ConcurrentQueue<(FishSignal, object)>();
     }
 
-    public class FishContext : Context
+    public class FishConductor : StateConductor
     {
-        public FishContextData Data { get; set; }
-        public new FishContextState State
+        public FishContext Data { get; set; }
+        public new FishState State
         {
-            get => base.State as FishContextState;
+            get => base.State as FishState;
             set
             {
                 if (base.State != value)
                 {
-                    if (OnStateChanged?.Invoke((State, value)) != true)
+                    var oldState = State;
+                    if (oldState?.OnStateChanged?.Invoke((oldState, value)) != true)
                     {
                         base.State = value;
+                        value.Conductor = oldState.Conductor;
+                        value.Owner = oldState?.Owner ?? owner;
+                        value?.OnStateChanged?.Invoke((oldState, value));
+                        Array.ForEach(
+                            oldState?.OnStateChanged?.GetInvocationList() ?? Array.Empty<Func<(BirdState oldState, BirdState newState)>>(),
+                            e => oldState.OnStateChanged -= (Func<(FishState oldState, FishState newState), bool>)e);
+
                     }
                 }
             }
         }
-        public new Func<(FishContextState oldState, FishContextState newState), bool> OnStateChanged;
-        public FishContext(MonoBehaviour owner) : base(owner) { }
-        public void Run(FishContextData data, FishContextState state)
+        public new Func<(FishState oldState, FishState newState), bool> OnStateChanged;
+        public FishConductor(MonoBehaviour owner) : base(owner) { }
+        public void Run(FishContext data, FishState state)
         {
             Data = data;
+            state.Conductor = this;
             base.Run(state);
+        }
+        public override void ChangeState(State state, bool isForce = false)
+        {
+            if (state is FishState fs)
+            {
+                State = fs;
+                base.ChangeState(state, isForce);
+            }
         }
     }
 }

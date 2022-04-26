@@ -42,18 +42,18 @@ namespace Assets.Scripts.Birds
                 switch (index)
                 {
                     case 0:
-                        bool stateChanged1((BirdContextState oldState, BirdContextState newState) states)
+                        bool stateChanged1((BirdState oldState, BirdState newState) states)
                         {
                             if (states.newState.ID == BirdEnum.Idling)
                             {
-                                _lifeCycle.Data.Channel.Enqueue((BirdSignal.GrownStage1, null));
-                                EnergyConsumePerSecond *= 1.5f;
-                                _lifeCycle.OnStateChanged -= stateChanged1;
+                                _conductor.Context.Channel.Enqueue((BirdSignal.GrownStage1, null));
+                                _energyConsumePerSecond *= 1.2f;
+                                _conductor.OnStateChanged -= stateChanged1;
                                 done = true;
                             }
                             return false;
                         }
-                        _lifeCycle.OnStateChanged += stateChanged1;
+                        _conductor.OnStateChanged += stateChanged1;
                         yield return new WaitUntil(() => done);
                         done = false;
                         if (_birdManager.AllBirds.Remove(gameObject))
@@ -63,18 +63,18 @@ namespace Assets.Scripts.Birds
                         }
                         break;
                     case 1:
-                        bool stateChanged2((BirdContextState oldState, BirdContextState newState) states)
+                        bool stateChanged2((BirdState oldState, BirdState newState) states)
                         {
                             if (states.newState.ID == BirdEnum.Idling)
                             {
-                                _lifeCycle.Data.Channel.Enqueue((BirdSignal.GrownStage2, null));
-                                EnergyConsumePerSecond *= 1.5f;
-                                _lifeCycle.OnStateChanged -= stateChanged2;
+                                _conductor.Context.Channel.Enqueue((BirdSignal.GrownStage2, null));
+                                _energyConsumePerSecond *= 1.2f;
+                                _conductor.OnStateChanged -= stateChanged2;
                                 done = true;
                             }
                             return false;
                         }
-                        _lifeCycle.OnStateChanged += stateChanged2;
+                        _conductor.OnStateChanged += stateChanged2;
                         yield return new WaitUntil(() => done);
                         done = false;
                         if (_birdManager.AllBirds.Remove(gameObject))
@@ -90,12 +90,12 @@ namespace Assets.Scripts.Birds
 
             var coroutine = this.GetProduceCashCoroutine(options =>
             {
-                options.CoroutineTime = (timeStep: 7.0f, variationRange: 1f);
+                options.CoroutineTime = (timeStep: 5.0f, variationRange: 1f);
                 options.CashInfo = new List<(float timeOut, float variationRange, GameObject cash)>
                 {
-                    (timeOut: 40f, variationRange: 5f, cash: null),
-                    (timeOut: 60f, variationRange: 5f, cash: CashPrefabs[0]),
-                    (timeOut: 0f, variationRange: 10f, cash: CashPrefabs[1])
+                    (timeOut: 20f, variationRange: 5f, cash: null),
+                    (timeOut: 40f, variationRange: 5f, cash: _cashPrefabs[0]),
+                    (timeOut: 0f, variationRange: 10f, cash: _cashPrefabs[1])
                 };
                 options.HzedOutHandler = handleHzedOut;
             });

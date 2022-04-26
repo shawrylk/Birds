@@ -38,14 +38,14 @@ namespace Assets.Scripts.Birds
                 options.CoroutineTime = (timeStep: 10.0f, variationRange: 1f);
                 options.CashInfo = new List<(float timeOut, float variationRange, GameObject cash)>
                 {
-                    (timeOut: 0f, variationRange: 5f, cash: CashPrefabs[0]),
+                    (timeOut: 0f, variationRange: 5f, cash: _cashPrefabs[0]),
                 };
                 options.HzedOutHandler = null;
             });
 
             StartCoroutine(coroutine?.Invoke(_cancelSource.Token));
         }
-        protected override Func<Context, IEnumerator> HandleIdlingState()
+        protected override Func<IEnumerator> HandleIdlingState(BirdState state)
         {
             var positionHandler = transform.GetPositionResolver();
             var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
@@ -67,10 +67,10 @@ namespace Assets.Scripts.Birds
             var sToHz = timeStep.GetSToHzHandler();
             var timeOutHz = sToHz(Range(5, 7));
 
-            IEnumerator idlingHandler(Context context)
+            IEnumerator idlingHandler()
             {
-                var birdContext = context as BirdContext;
-                if (birdContext is null) yield return null;
+                var birdConductor = state.Conductor;
+                if (birdConductor is null) yield return null;
 
                 var time = 0;
                 var hzedOut = sToHz(Range(1.7f, 2.3f));
@@ -81,11 +81,11 @@ namespace Assets.Scripts.Birds
 
                 while (true)
                 {
-                    if (birdContext.Data.Channel.TryDequeue(out var result))
+                    if (birdConductor.Context.Channel.TryDequeue(out var result))
                     {
                         if (result.key == BirdSignal.EnergyRegen)
                         {
-                            var Energytime = Convert.ToInt32(result.value) / EnergyConsumePerSecond;
+                            var Energytime = Convert.ToInt32(result.value) / _energyConsumePerSecond;
                             timeOutHz = sToHz(Energytime);
                         }
                     }
@@ -95,7 +95,7 @@ namespace Assets.Scripts.Birds
 
                     if (++time >= timeOutHz)
                     {
-                        birdContext.State = huntingState;
+                        birdConductor.ChangeState(huntingState);
                         break;
                     }
 
@@ -105,7 +105,7 @@ namespace Assets.Scripts.Birds
             return idlingHandler;
         }
 
-        protected override Func<Context, IEnumerator> HandleHuntingState()
+        protected override Func<IEnumerator> HandleHuntingState(BirdState state)
         {
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
@@ -123,10 +123,10 @@ namespace Assets.Scripts.Birds
             var targetFinder = new TargetFinder();
 
 
-            IEnumerator huntingHandler(Context context)
+            IEnumerator huntingHandler()
             {
-                var birdContext = context as BirdContext;
-                if (birdContext is null) yield return null;
+                var birdConductor = state.Conductor;
+                if (birdConductor is null) yield return null;
                 var time = 0;
 
                 _collider.isTrigger = true;
@@ -136,7 +136,7 @@ namespace Assets.Scripts.Birds
                 {
                     yield return new WaitForSeconds(timeStep);
 
-                    if (birdContext.Data.Channel.TryDequeue(out var result))
+                    if (birdConductor.Context.Channel.TryDequeue(out var result))
                     {
                         if (result.key == BirdSignal.FoundFood
                             && result.value is Collider2D c
@@ -145,9 +145,9 @@ namespace Assets.Scripts.Birds
                             if (_foodIndex != _foodNames.IndexOf(c.name)) continue;
 
                             var energy = c.gameObject.GetComponent<IFood>().Energy;
-                            _lifeCycle.Data.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
+                            _conductor.Context.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
 
-                            birdContext.State = idlingState;
+                            birdConductor.ChangeState(idlingState);
                             _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
 
                             Destroy(c.gameObject, 0.1f);
@@ -194,14 +194,14 @@ namespace Assets.Scripts.Birds
 
                     if (time++ >= timeOutHz)
                     {
-                        _lifeCycle.State = starvingState;
+                        _conductor.ChangeState( starvingState);
                         break;
                     }
                 }
             }
             return huntingHandler;
         }
-        protected override Func<Context, IEnumerator> HandleStarvingState()
+        protected override Func<IEnumerator> HandleStarvingState(BirdState state)
         {
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
@@ -219,10 +219,10 @@ namespace Assets.Scripts.Birds
             var targetFinder = new TargetFinder();
 
 
-            IEnumerator starvingHandler(Context context)
+            IEnumerator starvingHandler()
             {
-                var birdContext = context as BirdContext;
-                if (birdContext is null) yield return null;
+                var birdConductor = state.Conductor;
+                if (birdConductor is null) yield return null;
                 var time = 0;
                 var grayScale = 0.0f;
 
@@ -234,28 +234,45 @@ namespace Assets.Scripts.Birds
                 {
                     yield return new WaitForSeconds(timeStep);
 
-                    if (birdContext.Data.Channel.TryDequeue(out var result))
+                    if (birdConductor.Context.Channel.TryDequeue(out var result))
                     {
                         if (result.key == BirdSignal.FoundFood
                             && result.value is Collider2D c
                             && c != null)
                         {
                             var energy = c.gameObject.GetComponent<Pigeon>().Energy;
-                            _lifeCycle.Data.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
+                            _conductor.Context.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
 
-                            birdContext.State = idlingState;
+                            birdConductor.ChangeState(idlingState);
                             _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
 
                             Destroy(c.gameObject, 0.1f);
                             break;
                         }
                     }
-                    var listSmallPigeons = default(List<GameObject>);
+                    var listFood = default(List<GameObject>);
+                    var targets = default(List<Transform>);
 
-                    _birdManager.AllBirds
-                        .TryGetValue(Pigeon.Name, out listSmallPigeons);
+                    _foodIndex = 0;
+                    while (_foodIndex < _foodNames.Count)
+                    {
+                        _fishManager.AllFishes
+                            .TryGetValue(_foodNames[_foodIndex], out listFood);
 
-                    var targets = listSmallPigeons?.Select(g => g.transform)?.ToList();
+                        if (listFood is null
+                            || listFood.Count == 0)
+                        {
+                            _foodIndex++;
+                            continue;
+                        }
+
+                        targets = listFood
+                            ?.Where(g => g != null)
+                            ?.Select(g => g.transform)
+                            ?.ToList();
+
+                        break;
+                    }
 
                     targetFinder.UpdateTargets(targets);
                     var position = positionHandler(targetFinder);
@@ -266,7 +283,7 @@ namespace Assets.Scripts.Birds
 
                     if (time++ >= timeOutHz)
                     {
-                        _lifeCycle.State = deathState;
+                        _conductor.ChangeState(deathState);
                         break;
                     }
                 }
