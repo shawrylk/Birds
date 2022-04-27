@@ -22,25 +22,27 @@ public class Boundaries : MonoBehaviour
     }
     private void SetUpBoundaries(Dictionary<string, Transform> boundaries, float unit)
     {
-        var topOffset = -200.ToUnit();
-        var offset = 0.5f;
+        var topOffset = -50.ToUnit();
         var heightInUnit = Screen.height * unit;
         var widthInUnit = Screen.width * unit;
+        var offset = 0;
+        var boundaryWidth = 1;
+        var boundaryHeight = 1;
 
-        boundaries[Global.LEFT_BOUNDARY].transform.position = new Vector3(widthInUnit / -2 - offset, 0, 0);
-        boundaries[Global.LEFT_BOUNDARY].transform.localScale = new Vector3(1, heightInUnit + offset, 0);
+        boundaries[Global.LEFT_BOUNDARY].transform.position = new Vector3(widthInUnit / -2f - offset - boundaryWidth / 2f, 0, 0);
+        boundaries[Global.LEFT_BOUNDARY].transform.localScale = new Vector3(boundaryWidth, heightInUnit + offset, 0);
 
-        boundaries[Global.RIGHT_BOUNDARY].transform.position = new Vector3(widthInUnit / 2 + offset, 0, 0);
-        boundaries[Global.RIGHT_BOUNDARY].transform.localScale = new Vector3(1, heightInUnit + offset, 0);
+        boundaries[Global.RIGHT_BOUNDARY].transform.position = new Vector3(widthInUnit / 2f + offset + boundaryWidth / 2f, 0, 0);
+        boundaries[Global.RIGHT_BOUNDARY].transform.localScale = new Vector3(boundaryWidth, heightInUnit + offset, 0);
 
-        boundaries[Global.TOP_BOUNDARY].transform.position = new Vector3(0, heightInUnit / 2 + offset + topOffset, 0);
-        boundaries[Global.TOP_BOUNDARY].transform.localScale = new Vector3(widthInUnit + offset, 1, 0);
+        boundaries[Global.TOP_BOUNDARY].transform.position = new Vector3(0, heightInUnit / 2f + offset + topOffset + boundaryHeight / 2f, 0);
+        boundaries[Global.TOP_BOUNDARY].transform.localScale = new Vector3(widthInUnit + offset, boundaryHeight, 0);
 
-        boundaries[Global.BOTTOM_BOUNDARY].transform.position = new Vector3(0, heightInUnit / -2 - offset, 0);
-        boundaries[Global.BOTTOM_BOUNDARY].transform.localScale = new Vector3(widthInUnit + offset, 1, 0);
+        boundaries[Global.BOTTOM_BOUNDARY].transform.position = new Vector3(0, heightInUnit / -2f - offset - boundaryHeight / 2f, 0);
+        boundaries[Global.BOTTOM_BOUNDARY].transform.localScale = new Vector3(widthInUnit + offset, boundaryHeight, 0);
 
-        boundaries[Global.WATER_SURFACE_BOUNDARY].transform.position = new Vector3(0, (heightInUnit / -2 - offset) * 0.5f, 0);
-        boundaries[Global.WATER_SURFACE_BOUNDARY].transform.localScale = new Vector3(widthInUnit + offset, 1, 0);
+        boundaries[Global.WATER_SURFACE_BOUNDARY].transform.position = new Vector3(0, (heightInUnit / -2f - offset) * 0.5f, 0);
+        boundaries[Global.WATER_SURFACE_BOUNDARY].transform.localScale = new Vector3(widthInUnit + offset, boundaryHeight, 0);
 
     }
 }
