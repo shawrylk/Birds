@@ -52,8 +52,17 @@ namespace Assets.Scripts.Utilities
             Items.Clear();
 
             var camera = Camera.main;
+            if (Screen.height / Screen.width >= 2)
+            {
+                camera.orthographicSize = 3.6f;
+            }
+            else
+            {
+                camera.orthographicSize = 3.2f;
+            }
             var screenHeightInUnit = camera.orthographicSize * 2;
             UnitsPerPixel = screenHeightInUnit / Screen.height;
+            Debug.Log(UnitsPerPixel);
         }
     }
 }

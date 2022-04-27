@@ -83,10 +83,10 @@ namespace Assets.Scripts.Birds
             //var (pidHandler, resetPid) = transform.GetPidHandler(10f, 10f, 11f, -7f, 7f, _rigidbody);
             var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
             {
-                options.X = (10f, 10f, 11f);
-                options.Y = (10f, 10f, 11f);
-                options.ClampX = (-7f, 7f);
-                options.ClampY = (-7f, 7f);
+                options.X = (6f, 6f, 6.1f);
+                options.Y = (6f, 6f, 6.1f);
+                options.ClampX = (-3.4f, 3.4f);
+                options.ClampY = (-3.4f, 3.4f);
                 options.Transform = transform;
                 options.Rigidbody2D = _rigidbody;
             });
@@ -99,7 +99,7 @@ namespace Assets.Scripts.Birds
 
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
-            var timeOutHz = sToHz(Range(6, 8));
+            var timeOutHz = sToHz(Range(8, 10));
 
             IEnumerator idlingHandler()
             {
@@ -200,14 +200,14 @@ namespace Assets.Scripts.Birds
         {
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
-            var timeOutHz = sToHz(Range(6, 8));
+            var timeOutHz = sToHz(Range(8, 10));
             var positionHandler = transform.GetPositionResolver();
             var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
             {
-                options.X = (10f, 10f, 11f);
-                options.Y = (10f, 10f, 11f);
-                options.ClampX = (-7f, 7f);
-                options.ClampY = (-7f, 7f);
+                options.X = (6f, 6f, 6.1f);
+                options.Y = (6f, 6f, 6.1f);
+                options.ClampX = (-3.4f, 3.4f);
+                options.ClampY = (-3.4f, 3.4f);
                 options.Transform = transform;
                 options.Rigidbody2D = _rigidbody;
             });
@@ -275,14 +275,14 @@ namespace Assets.Scripts.Birds
         {
             var timeStep = 0.1f;
             var sToHz = timeStep.GetSToHzHandler();
-            var timeOutHz = sToHz(Range(7, 9));
+            var timeOutHz = sToHz(Range(10, 12));
             var positionHandler = transform.GetPositionResolver();
             var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
             {
-                options.X = (10f, 10f, 11f);
-                options.Y = (10f, 10f, 11f);
-                options.ClampX = (-9f, 9f);
-                options.ClampY = (-9f, 9f);
+                options.X = (6f, 6f, 6.1f);
+                options.Y = (6f, 6f, 6.1f);
+                options.ClampX = (-4.4f, 4.4f);
+                options.ClampY = (-4.4f, 4.4f);
                 options.Transform = transform;
                 options.Rigidbody2D = _rigidbody;
             });

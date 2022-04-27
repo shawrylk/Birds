@@ -30,7 +30,7 @@ namespace Assets.Scripts
 
         protected virtual void OnTriggerStay2D(Collider2D collision)
         {
-            const float force = 50f;
+            const float force = 5f;
             if (collision.gameObject.CompareTag(Global.BOUNDARY_TAG))
             {
                 if (collision.gameObject.name.ToLower() == Global.BOTTOM_BOUNDARY)

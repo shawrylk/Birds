@@ -25,7 +25,7 @@ namespace Assets.Scripts
         {
             _rigidbody = GetComponent<Rigidbody2D>();
             _sprite = GetComponent<SpriteRenderer>();
-            _rigidbody.velocity = new Vector2(0, -1f);
+            _rigidbody.velocity = new Vector2(0, -0.2f);
             MoveRandom();
         }
 
@@ -35,7 +35,7 @@ namespace Assets.Scripts
             {
                 while (true)
                 {
-                    _rigidbody.AddForce(Vector2.right * UnityEngine.Random.Range(-15f, 15f));
+                    _rigidbody.AddForce(Vector2.right * UnityEngine.Random.Range(-3f, 3f));
                     _sprite.flipX = _rigidbody.velocity.x < 0;
                     yield return new WaitForSeconds(0.2f);
                 }
