@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Assets.Scripts
 {
@@ -43,8 +44,8 @@ namespace Assets.Scripts
 
         private IEnumerator SpawnFishCoroutine()
         {
-            yield return new WaitForSeconds(120f);
-            var yieldTimeStep = new WaitForSeconds(20f);
+            //yield return new WaitForSeconds(120f);
+            var yieldTimeStep = new WaitForSeconds(Random.Range(1f, 2f));
             while (true)
             {
                 SpawnFish(0);
@@ -68,7 +69,7 @@ namespace Assets.Scripts
             var count = _transforms.Length;
             var posX = widthInUnit / count;
             var xOffset = posX / 2;
-            var yOffset = 1f;
+            var yOffset = 0.11f;
             for (var i = 0; i < count; i++)
             {
                 _transforms[i].localPosition = new Vector3(widthInUnit / -2 + posX * i + xOffset, heightInUnit / -2 + yOffset, 0);

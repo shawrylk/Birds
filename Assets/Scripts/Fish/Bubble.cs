@@ -18,52 +18,52 @@ namespace Assets.Scripts.Fish
 
         private bool _capturedBird = false;
         private Guard _guard = new Guard();
-        private Action<InputContext> _touchHandler = null;
+        //private Action<InputContext> _touchHandler = null;
         public float CaptureTime { get; set; } = 5;
         private void Awake()
         {
             _rigidbody2D = GetComponent<Rigidbody2D>();
             _enemyManager = Global.GameObjects.GetGameObject(Global.ENEMY_MANAGER_TAG).GetComponent<EnemyManager>();
-            _enemyManager.TouchEvent += _touchHandler = TouchHandler();
+            //_enemyManager.TouchEvent += _touchHandler = TouchHandler();
         }
         protected void OnDestroy()
         {
-            _enemyManager.TouchEvent -= _touchHandler;
+            //_enemyManager.TouchEvent -= _touchHandler;
         }
 
-        private Action<InputContext> TouchHandler()
-        {
-            int touchCount = 0;
-            float startTime = 0;
-            return new Action<InputContext>((input) =>
-            {
-                var position = input.ScreenPosition.ToWorldCoord();
-                var hits = Physics2D.CircleCastAll(position, castThickness, Vector2.zero);
-                if (hits != null
-                && hits.Any(h => h.collider.transform == transform))
-                {
-                    touchCount++;
-                    if (touchCount == 1)
-                    {
-                        startTime = Time.time;
-                        input.Handled = true;
-                    }
-                    else if (touchCount == 2)
-                    {
-                        if (Time.time - startTime < 1f)
-                        {
-                            Destroy(gameObject);
-                            input.Handled = true;
-                        }
-                    }
-                    else
-                    {
-                        touchCount = 0;
-                        startTime = 0;
-                    }
-                }
-            });
-        }
+        //private Action<InputContext> TouchHandler()
+        //{
+        //    int touchCount = 0;
+        //    float startTime = 0;
+        //    return new Action<InputContext>((input) =>
+        //    {
+        //        var position = input.ScreenPosition.ToWorldCoord();
+        //        var hits = Physics2D.CircleCastAll(position, castThickness, Vector2.zero);
+        //        if (hits != null
+        //        && hits.Any(h => h.collider.transform == transform))
+        //        {
+        //            touchCount++;
+        //            if (touchCount == 1)
+        //            {
+        //                startTime = Time.time;
+        //                input.Handled = true;
+        //            }
+        //            else if (touchCount == 2)
+        //            {
+        //                if (Time.time - startTime < 1f)
+        //                {
+        //                    Destroy(gameObject);
+        //                    input.Handled = true;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                touchCount = 0;
+        //                startTime = 0;
+        //            }
+        //        }
+        //    });
+        //}
         private void OnCollisionEnter2D(Collision2D collision)
         {
             if (_capturedBird == false)

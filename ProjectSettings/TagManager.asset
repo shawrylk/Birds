@@ -18,6 +18,7 @@ TagManager:
   - EnemyManager
   - Fish
   - WaterSurface
+  - Hook
   layers:
   - Default
   - TransparentFX
@@ -32,7 +33,7 @@ TagManager:
   - Boundaries
   - Fishes
   - WaterSurface
-  - 
+  - Player
   - 
   - 
   - 

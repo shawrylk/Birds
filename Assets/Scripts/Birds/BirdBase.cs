@@ -74,7 +74,7 @@ namespace Assets.Scripts.Birds
             _conductor.Run(
                 data: new BirdContext(),
                 state: ListStates
-                    .First(s => s.ID == BirdEnum.Hunting));
+                    .First(s => s.ID == BirdEnum.Idling));
             CooperativeChannel = _conductor.Context.Channel;
         }
 

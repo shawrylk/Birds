@@ -22,6 +22,7 @@ namespace Assets.Scripts.Utilities
         public const string ENEMY_MANAGER_TAG = "EnemyManager";
         public const string ENEMY_TAG = "Enemy";
         public const string SMALL_FISH_TAG = "SmallFish";
+        public const string INPUT = "Input";
 
         public const string BIRDS_MARK_LAYER = "Birds";
 
@@ -29,6 +30,7 @@ namespace Assets.Scripts.Utilities
         public const string RIGHT_BOUNDARY = "right";
         public const string TOP_BOUNDARY = "top";
         public const string BOTTOM_BOUNDARY = "bottom";
+        public const string BOTTOM2_BOUNDARY = "bottom2";
         public const string WATER_SURFACE_BOUNDARY = "surface";
         public const string UNITS_PER_PIXEL = "UnitsPerPixel";
 
@@ -40,6 +42,7 @@ namespace Assets.Scripts.Utilities
 
         public static readonly float UnitsPerPixel;
 
+        public const int INPUT_SCRIPT = -110;
         public const int LEVEL_MANAGER_ORDER = -100;
         public const int CASH_MANAGER_ORDER = -90;
         public const int BOUNDARIES_ORDER = -80;
@@ -52,17 +55,17 @@ namespace Assets.Scripts.Utilities
             Items.Clear();
 
             var camera = Camera.main;
-            if (Screen.height / Screen.width >= 2)
-            {
-                camera.orthographicSize = 3.6f;
-            }
-            else
-            {
-                camera.orthographicSize = 3.2f;
-            }
+            //if (Screen.height / Screen.width >= 2)
+            //{
+            camera.orthographicSize = Screen.height / 600f;
+            //}
+            //else
+            //{
+            //    camera.orthographicSize = 3.2f;
+            //}
             var screenHeightInUnit = camera.orthographicSize * 2;
             UnitsPerPixel = screenHeightInUnit / Screen.height;
-            Debug.Log(UnitsPerPixel);
+            Debug.Log(camera.orthographicSize);
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Assets.Contracts;
+using Assets.Inputs;
 using Assets.Scripts.Utilities;
 using TMPro;
 using UnityEngine;
@@ -20,27 +21,26 @@ namespace Assets.Scripts
         private TextMeshProUGUI _scoreTMP;
 
         private const float castThickness = 0.4f;
-        private IInputManager _input;
+        private IInput _input;
         private int _score;
         private void Awake()
         {
             int.TryParse(_scoreTMP.text, out _score);
             _instance = FindObjectOfType<CashManager>();
-            _input = InputManager.Instance;
-            _input.OnStartTouch += Touch;
+            _input = Global.Items[Global.INPUT] as IInput;
+            _input.TapHandler += Touch;
         }
 
         private void OnDisable()
         {
             if (_input != null)
             {
-                _input.OnStartTouch -= Touch;
+                _input.TapHandler -= Touch;
             }
         }
 
-        private void Touch(InputContext input)
+        private Task Touch(Vector2 position)
         {
-            var position = input.ScreenPosition.ToWorldCoord();
             var hits = Physics2D.CircleCastAll(position, castThickness, Vector2.zero);
             if (hits != null)
             {
@@ -56,11 +56,13 @@ namespace Assets.Scripts
                         //    currentCash += value;
                         //    ScoreTMP.text = currentCash.ToString();
                         //}
-                        input.Handled = true;
+
+                        //input.Handled = true;
                         break;
                     }
                 }
             }
+            return Task.CompletedTask;
         }
 
         public (bool isDone, int currentScore) Add(int value)

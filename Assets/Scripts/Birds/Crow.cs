@@ -25,8 +25,8 @@ namespace Assets.Scripts.Birds
             _birdManager = BirdManager.Instance;
             _fishManager = FishManager.Instance;
             _foodNames = new List<string>{
-                FishBase.Name2,
-                FishBase.Name,
+                //FishBase.Name2,
+                //FishBase.Name,
                 Pigeon.Name
             };
             ProduceCash();
@@ -161,7 +161,9 @@ namespace Assets.Scripts.Birds
                     _foodIndex = 0;
                     while (_foodIndex < _foodNames.Count)
                     {
-                        _fishManager.AllFishes
+                        //_fishManager.AllFishes
+                        //    .TryGetValue(_foodNames[_foodIndex], out listFood);
+                        _birdManager.AllBirds
                             .TryGetValue(_foodNames[_foodIndex], out listFood);
 
                         if (listFood is null
@@ -194,7 +196,7 @@ namespace Assets.Scripts.Birds
 
                     if (time++ >= timeOutHz)
                     {
-                        _conductor.ChangeState( starvingState);
+                        _conductor.ChangeState(starvingState);
                         break;
                     }
                 }
@@ -256,7 +258,9 @@ namespace Assets.Scripts.Birds
                     _foodIndex = 0;
                     while (_foodIndex < _foodNames.Count)
                     {
-                        _fishManager.AllFishes
+                        //_fishManager.AllFishes
+                        //    .TryGetValue(_foodNames[_foodIndex], out listFood);
+                        _birdManager.AllBirds
                             .TryGetValue(_foodNames[_foodIndex], out listFood);
 
                         if (listFood is null

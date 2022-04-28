@@ -1,4 +1,5 @@
 ﻿using Assets.Contracts;
+using Assets.Inputs;
 using Assets.Scripts.Utilities;
 using System;
 using System.Collections;
@@ -20,11 +21,11 @@ namespace Assets.Scripts
         private List<ParticleSystem> _touchFxPool = new List<ParticleSystem>();
 
         private int _enemy_count_max;
-        private IInputManager _input;
         private Dictionary<string, Transform> _boundaries;
+        private IInput _input;
 
-        private event Action<InputContext> _touchEvent;
-        public event Action<InputContext> TouchEvent
+        private event Func<Vector2, Task<bool>> _touchEvent;
+        public event Func<Vector2, Task<bool>> TouchEvent
         {
             add => _touchEvent += value;
             remove => _touchEvent -= value;
@@ -34,31 +35,31 @@ namespace Assets.Scripts
         {
             _boundaries = Global.Items[Global.BOUNDARIES_TAG] as Dictionary<string, Transform>;
             _enemy_count_max = EnemyPrefabs.Length;
-            _input = InputManager.Instance;
-            _input.OnStartTouch += TouchHandler;
+            _input = Global.Items[Global.INPUT] as IInput;
+            _input.TapHandler += TouchHandler;
 
             StartAutoSpawnEnemy();
         }
 
         private void OnDisable()
         {
-            _input.OnStartTouch -= TouchHandler;
+            _input.TapHandler -= TouchHandler;
         }
 
         private int index = 0;
-        private void TouchHandler(InputContext input)
+        private async Task TouchHandler(Vector2 position)
         {
-            _touchEvent?.Invoke(input);
-            if (input.Handled)
+            var handled = await (_touchEvent?.Invoke(position) ?? Task.FromResult(false));
+            if (handled)
             {
                 if (_touchFxPool.Count <= index)
                 {
                     _touchFxPool.Add(Instantiate(
-                        _touchFx, 
-                        input.ScreenPosition.ToWorldCoord(), 
+                        _touchFx,
+                        position,
                         Quaternion.identity));
                 }
-                _touchFxPool[index].transform.position = input.ScreenPosition.ToWorldCoord();
+                _touchFxPool[index].transform.position = position;
                 _touchFxPool[index].Play();
                 index = ++index % 10;
             }
@@ -79,7 +80,7 @@ namespace Assets.Scripts
             var top = _boundaries[Global.TOP_BOUNDARY].position - verticalMargin - new Vector3(0, heightInUnit / 2, 0);
             var bottom = _boundaries[Global.BOTTOM_BOUNDARY].position + verticalMargin;
 
-            var timeStep1 = UnityEngine.Random.Range(50f, 70f);
+            var timeStep1 = UnityEngine.Random.Range(5f, 7f);
             var timeStep2 = 2.0f;
             while (true)
             {

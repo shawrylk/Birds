@@ -15,20 +15,20 @@ namespace Assets.Scripts
         public GameObject Boundaries;
         public GameObject UI;
 
-        private IInputManager _input;
+        //private IInputManager _input;
         private void Awake()
         {
-            _input = InputManager.Instance;
-            _input.OnStartTouch += AvoidClickThroughUI;
+            //_input = InputManager.Instance;
+            //_input.OnStartTouch += AvoidClickThroughUI;
         }
 
-        private void AvoidClickThroughUI(InputContext input)
-        {
-        }
+        //private void AvoidClickThroughUI(InputContext input)
+        //{
+        //}
 
-        private void OnDisable()
-        {
-            _input.OnStartTouch -= AvoidClickThroughUI;
-        }
+        //private void OnDisable()
+        //{
+        //    _input.OnStartTouch -= AvoidClickThroughUI;
+        //}
     }
 }

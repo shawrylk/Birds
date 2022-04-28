@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Contracts;
+using Assets.Inputs;
 using Assets.Scripts.Utilities;
 using TMPro;
 using UnityEngine;
@@ -15,12 +16,14 @@ namespace Assets.Scripts
     [DefaultExecutionOrder(Global.FOOD_MANAGER_ORDER)]
     public class FoodManager : MonoBehaviour
     {
-        private IInputManager _input;
+        private IInput _input;
         private int _price = 0;
         private const int MAX_FOOD_COUNT = 10;
         private int _foods_last_index = 0;
         public GameObject[] FoodPrefabs;
         private CashManager _cashManager;
+
+        public static FoodManager Instance { get; private set; }
 
         public Button UpgradeFoodQualityButton;
         public Button UpgradeFoodCountButton;
@@ -32,11 +35,12 @@ namespace Assets.Scripts
         public int FoodCount = 1;
         private void Awake()
         {
-            _input = InputManager.Instance;
-            _input.OnStartTouch += SpawnFood;
+            //_input = InputManager.Instance;
+            //_input.OnStartTouch += SpawnFood;
             _price = GetCurrentFood(FoodIndex).gameObject.GetComponent<Food>().Price;
             _foods_last_index = FoodPrefabs.Length - 1;
             _cashManager = CashManager.Instance;
+            Instance = this;
         }
 
         private GameObject GetCurrentFood(int index)
@@ -87,11 +91,11 @@ namespace Assets.Scripts
                 }
             }
         }
-        private void OnDisable()
-        {
-            _input.OnStartTouch -= SpawnFood;
-        }
-        private void SpawnFood(InputContext input)
+        //private void OnDisable()
+        //{
+        //    _input.OnStartTouch -= SpawnFood;
+        //}
+        public void SpawnFood(Vector3 position)
         {
             if (FoodPrefabs != null)
             {
@@ -100,7 +104,7 @@ namespace Assets.Scripts
                     var (isDone, currentCash) = _cashManager.Minus(_price);
                     if (isDone)
                     {
-                        var position = input.ScreenPosition.ToWorldCoord();
+                        //var position = input.ScreenPosition.ToWorldCoord();
                         var food =
                             Instantiate(original: GetCurrentFood(FoodIndex),
                             position: position,

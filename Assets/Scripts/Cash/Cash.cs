@@ -47,16 +47,21 @@ namespace Assets.Scripts
 
         public int GetValue()
         {
-            IEnumerator move()
+            //IEnumerator move()
+            //{
+            //    while (true)
+            //    {
+            //        Vector2 direction = _score.transform.position - transform.position;
+            //        _rigidbody.AddForce(direction.normalized * 40f);
+            //        yield return new WaitForFixedUpdate();
+            //    }
+            //}
+            //StartCoroutine(move());
+            var (isDone, _) = _cashManager.Add(Value);
+            if (isDone)
             {
-                while (true)
-                {
-                    Vector2 direction = _score.transform.position - transform.position;
-                    _rigidbody.AddForce(direction.normalized * 40f);
-                    yield return new WaitForFixedUpdate();
-                }
+                Destroy(gameObject);
             }
-            StartCoroutine(move());
             return Value;
         }
 

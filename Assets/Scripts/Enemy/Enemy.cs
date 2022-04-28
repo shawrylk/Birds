@@ -1,4 +1,5 @@
 ﻿using Assets.Contracts;
+using Assets.Inputs;
 using Assets.Scripts.Utilities;
 using System;
 using System.Collections;
@@ -13,7 +14,7 @@ namespace Assets.Scripts.Enemy
 {
     public class Enemy : AnimalBase
     {
-        private IInputManager _input;
+        private IInput _input;
         private EnemyManager _enemyManager;
         private GameObject _cashManager;
         private const float castThickness = 1f;
@@ -44,10 +45,10 @@ namespace Assets.Scripts.Enemy
             var positionHandler = transform.GetPositionResolver();
             var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
             {
-                options.X = (20f, 10f, 21f);
-                options.Y = (20f, 10f, 21f);
-                options.ClampX = (-10f, 10f);
-                options.ClampY = (-10f, 10f);
+                options.X = (12f, 5f, 11f);
+                options.Y = (12f, 5f, 11f);
+                options.ClampX = (-3f, 3f);
+                options.ClampY = (-3f, 3f);
                 options.Transform = transform;
                 options.Rigidbody2D = _rigidbody;
             }); var targetFinder = new TargetFinder();
@@ -76,11 +77,10 @@ namespace Assets.Scripts.Enemy
             StartCoroutine(huntingHandler());
         }
 
-        private void TouchHandler(InputContext input)
+        private Task<bool> TouchHandler(Vector2 position)
         {
-            if (destroyed) return;
+            if (destroyed) return Task.FromResult(false);
 
-            var position = input.ScreenPosition.ToWorldCoord();
             var hits = Physics2D.CircleCastAll(position, castThickness, Vector2.zero);
             if (hits != null)
             {
@@ -91,7 +91,7 @@ namespace Assets.Scripts.Enemy
                         && hit.transform == transform)
                     {
                         var direction = ((Vector2)transform.position - hit.point).normalized;
-                        _rigidbody.AddForce(direction * Range(20f, 30f));
+                        _rigidbody.AddForce(direction * Range(5f, 10f));
 
                         Health -= 3f;
 
@@ -101,12 +101,13 @@ namespace Assets.Scripts.Enemy
                             DestroySelf();
                         }
 
-                        input.Handled = true;
+                        return Task.FromResult(true);
 
-                        break;
+                        //break;
                     }
                 }
             }
+            return Task.FromResult(false);
         }
 
         private void DestroySelf()
