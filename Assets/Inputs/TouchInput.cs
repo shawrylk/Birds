@@ -137,7 +137,8 @@ namespace Assets.Inputs
 
         private async Task InvokeHandler(Func<Vector2, Task<bool>> funcs, Vector2 direction)
         {
-            var list = funcs.GetInvocationList();
+            var list = funcs?.GetInvocationList();
+            if (list is null) return;
             foreach (Func<Vector2, Task<bool>> func in list)
             {
                 var ret = await (func?.Invoke(direction) ?? Task.FromResult(false));
