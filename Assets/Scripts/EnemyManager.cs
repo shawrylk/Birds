@@ -47,7 +47,7 @@ namespace Assets.Scripts
         }
 
         private int index = 0;
-        private async Task TouchHandler(Vector2 position)
+        private async Task<bool> TouchHandler(Vector2 position)
         {
             var handled = await (_touchEvent?.Invoke(position) ?? Task.FromResult(false));
             if (handled)
@@ -63,6 +63,7 @@ namespace Assets.Scripts
                 _touchFxPool[index].Play();
                 index = ++index % 10;
             }
+            return handled;
         }
 
         private void StartAutoSpawnEnemy()
@@ -71,7 +72,7 @@ namespace Assets.Scripts
         }
         private IEnumerator SpawnEnemy()
         {
-            var offset = 2f;
+            var offset = 0f;
             var heightInUnit = Screen.height * Global.UnitsPerPixel;
             var horizontalMargin = new Vector3(offset, 0, 0);
             var verticalMargin = new Vector3(0, offset, 0);
@@ -80,7 +81,7 @@ namespace Assets.Scripts
             var top = _boundaries[Global.TOP_BOUNDARY].position - verticalMargin - new Vector3(0, heightInUnit / 2, 0);
             var bottom = _boundaries[Global.BOTTOM_BOUNDARY].position + verticalMargin;
 
-            var timeStep1 = UnityEngine.Random.Range(5f, 7f);
+            var timeStep1 = UnityEngine.Random.Range(50f, 70f);
             var timeStep2 = 2.0f;
             while (true)
             {

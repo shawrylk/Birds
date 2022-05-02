@@ -93,10 +93,10 @@ namespace Assets.Scripts.Fishes
         {
             if (collision.gameObject.CompareTag(Global.BOUNDARY_TAG))
             {
-                if (collision.gameObject.name.ToLower() == Global.BOTTOM2_BOUNDARY)
-                {
-                    Destroy(gameObject);
-                }
+                //if (collision.gameObject.name.ToLower() == Global.BOTTOM2_BOUNDARY)
+                //{
+                //    Destroy(gameObject);
+                //}
             }
         }
     }

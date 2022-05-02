@@ -28,11 +28,10 @@ namespace Assets.Scripts
             var rigidbody = _handObject.GetComponent<Rigidbody2D>();
             _input.SwipeHandler += (vector) =>
             {
-                if (_handOrigin != _handObject.transform.position) return Task.CompletedTask;
-
+                if (_handOrigin != _handObject.transform.position) return Task.FromResult(false);
                 Vector3.RotateTowards(_handObject.transform.rotation.eulerAngles, vector, 1, 1);
                 rigidbody.AddForce(vector.normalized * 200f);
-                return Task.CompletedTask;
+                return Task.FromResult(false);
             };
         }
     }

@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 7155566947315036138}
   - component: {fileID: 7155566947315036139}
   - component: {fileID: 8806500894217027019}
-  - component: {fileID: 3785991422813496552}
   - component: {fileID: 6984452858055804051}
   - component: {fileID: -8692925684988314508}
+  - component: {fileID: 7768606324019266826}
   m_Layer: 3
   m_Name: gem_1
   m_TagString: Cash
@@ -30,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 7155566947315036140}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.06, y: 0.06, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -77,7 +77,7 @@ SpriteRenderer:
   m_SortingLayerID: -182626085
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: f103ad81e4505c74ea3bb12f4030118e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 623c7bf48f35dcd4c80f7dca5c518321, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -109,68 +109,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!60 &3785991422813496552
-PolygonCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7155566947315036140}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 5.12, y: 5.12}
-    newSize: {x: 0.79, y: 1.05}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Points:
-    m_Paths:
-    - - {x: 0.32, y: -1.06}
-      - {x: 0.34, y: -0.98999995}
-      - {x: 0.39, y: -0.79999995}
-      - {x: 0.48999998, y: -0.42999998}
-      - {x: 0.55, y: -0.21}
-      - {x: 0.62, y: 0.049999997}
-      - {x: 0.65999997, y: 0.19999999}
-      - {x: 0.65999997, y: 0.24}
-      - {x: 0.62, y: 0.31}
-      - {x: 0.5, y: 0.5}
-      - {x: 0.42999998, y: 0.61}
-      - {x: 0.32999998, y: 0.78}
-      - {x: 0.17999999, y: 1.02}
-      - {x: -0.089999996, y: 1.4399999}
-      - {x: -0.16, y: 1.53}
-      - {x: -0.17999999, y: 1.53}
-      - {x: -0.22, y: 1.48}
-      - {x: -0.22999999, y: 1.38}
-      - {x: -0.35999998, y: 0.90999997}
-      - {x: -0.42, y: 0.69}
-      - {x: -0.48999998, y: 0.42999998}
-      - {x: -0.58, y: 0.099999994}
-      - {x: -0.65999997, y: -0.19999999}
-      - {x: -0.65999997, y: -0.25}
-      - {x: -0.59999996, y: -0.35}
-      - {x: -0.45, y: -0.59}
-      - {x: -0.32999998, y: -0.77}
-      - {x: -0.22999999, y: -0.94}
-      - {x: -0.16, y: -1.04}
-      - {x: -0.08, y: -1.18}
-      - {x: -0.06, y: -1.1999999}
-      - {x: 0.089999996, y: -1.4499999}
-      - {x: 0.14999999, y: -1.54}
-      - {x: 0.17, y: -1.54}
-      - {x: 0.19, y: -1.53}
-      - {x: 0.22999999, y: -1.43}
-      - {x: 0.22999999, y: -1.39}
 --- !u!95 &6984452858055804051
 Animator:
   serializedVersion: 4
@@ -204,3 +142,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Value: 15
+--- !u!70 &7768606324019266826
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7155566947315036140}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 0.05, y: 0.09}
+  m_Direction: 0

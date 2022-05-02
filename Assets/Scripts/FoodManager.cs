@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Assets.Contracts;
 using Assets.Inputs;
 using Assets.Scripts.Utilities;
@@ -35,8 +36,8 @@ namespace Assets.Scripts
         public int FoodCount = 1;
         private void Awake()
         {
-            //_input = InputManager.Instance;
-            //_input.OnStartTouch += SpawnFood;
+            _input = Global.Items[Global.INPUT] as IInput;
+            _input.TapHandler += SpawnFood;
             _price = GetCurrentFood(FoodIndex).gameObject.GetComponent<Food>().Price;
             _foods_last_index = FoodPrefabs.Length - 1;
             _cashManager = CashManager.Instance;
@@ -91,11 +92,13 @@ namespace Assets.Scripts
                 }
             }
         }
-        //private void OnDisable()
-        //{
-        //    _input.OnStartTouch -= SpawnFood;
-        //}
-        public void SpawnFood(Vector3 position)
+
+        private void OnDisable()
+        {
+            _input.TapHandler -= SpawnFood;
+        }
+
+        public Task<bool> SpawnFood(Vector2 position)
         {
             if (FoodPrefabs != null)
             {
@@ -112,10 +115,11 @@ namespace Assets.Scripts
                             parent: transform);
 
                         food.name = Food.Name;
-
+                        return Task.FromResult(true);
                     }
                 }
             }
+            return Task.FromResult(false);
         }
     }
 }

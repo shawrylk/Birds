@@ -47,14 +47,17 @@ namespace Assets.Scripts
         {
             if (collision.gameObject.CompareTag(Global.BOUNDARY_TAG))
             {
-                if (_eaten == false
-                    && collision.gameObject.name.ToLower() == Global.BOTTOM_BOUNDARY)
+                if (_eaten == false)
                 {
-                    var (gotLck, lck) = _guard.TryGet();
-                    if (!gotLck) return;
-                    using var _ = lck;
-                    Destroy(gameObject, 0.1f);
-                    _eaten = true;
+                    if (collision.gameObject.name.ToLower() == Global.BOTTOM_BOUNDARY
+                        || collision.gameObject.name.ToLower() == Global.LAND_BOUNDARY)
+                    {
+                        var (gotLck, lck) = _guard.TryGet();
+                        if (!gotLck) return;
+                        using var _ = lck;
+                        Destroy(gameObject, 0.1f);
+                        _eaten = true;
+                    }
                 }
                 else
                 {

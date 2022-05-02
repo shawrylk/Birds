@@ -39,7 +39,7 @@ namespace Assets.Scripts
             }
         }
 
-        private Task Touch(Vector2 position)
+        private Task<bool> Touch(Vector2 position)
         {
             var hits = Physics2D.CircleCastAll(position, castThickness, Vector2.zero);
             if (hits != null)
@@ -58,11 +58,13 @@ namespace Assets.Scripts
                         //}
 
                         //input.Handled = true;
-                        break;
+                        return Task.FromResult(true);
+
+                        //break;
                     }
                 }
             }
-            return Task.CompletedTask;
+            return Task.FromResult(false);
         }
 
         public (bool isDone, int currentScore) Add(int value)
