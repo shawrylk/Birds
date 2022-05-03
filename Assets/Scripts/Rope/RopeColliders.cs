@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Scripts.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,42 +10,40 @@ namespace Assets.Scripts.Rope
 {
     public class RopeColliders : MonoBehaviour
     {
-        LineRenderer rope;
-        EdgeCollider2D edgeCollider;
+        private LineRenderer _rope;
+        private EdgeCollider2D _edgeCollider;
 
         Vector2[] points2 = null;
 
-        private void Start()
+        private void Awake()
         {
-            edgeCollider = this.gameObject.AddComponent<EdgeCollider2D>();
-            edgeCollider.transform.position = Vector3.zero;
-            //edgeCollider.edgeRadius = 0.1f;
-            rope = this.gameObject.GetComponent<LineRenderer>();
+            _edgeCollider = gameObject.GetComponent<EdgeCollider2D>();
+            _rope = gameObject.GetComponent<LineRenderer>();
 
             getNewPositions();
 
-            edgeCollider.points = points2;
+            _edgeCollider.points = points2;
         }
 
         private void FixedUpdate()
         {
-            if (rope.positionCount > 2
+            if (_rope.positionCount > 2
                 && points2 is null)
             {
-                points2 = new Vector2[rope.positionCount];
+                points2 = new Vector2[_rope.positionCount];
             }
 
             getNewPositions();
 
-            edgeCollider.points = points2;
+            _edgeCollider.points = points2;
         }
 
         void getNewPositions()
         {
             if (points2 is null) return;
-            for (int i = 0; i < rope.positionCount; i++)
+            for (int i = 0; i < _rope.positionCount; i++)
             {
-                points2[i] = Vector2.Lerp(points2[i], rope.GetPosition(i), 0.2f);
+                points2[i] = Vector2.Lerp(points2[i], transform.InverseTransformPoint(_rope.GetPosition(i)), 2f);
             }
         }
     }

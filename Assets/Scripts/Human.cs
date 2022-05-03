@@ -26,13 +26,13 @@ namespace Assets.Scripts
               parent: transform);
             _handOrigin = _handObject.transform.position;
             var rigidbody = _handObject.GetComponent<Rigidbody2D>();
-            _input.SwipeHandler += (vector) =>
-            {
-                if (_handOrigin != _handObject.transform.position) return Task.FromResult(false);
-                Vector3.RotateTowards(_handObject.transform.rotation.eulerAngles, vector, 1, 1);
-                rigidbody.AddForce(vector.normalized * 200f);
-                return Task.FromResult(false);
-            };
+            //_input.SwipeHandler += (vector) =>
+            //{
+            //    if (_handOrigin != _handObject.transform.position) return Task.FromResult(false);
+            //    Vector3.RotateTowards(_handObject.transform.rotation.eulerAngles, vector, 1, 1);
+            //    rigidbody.AddForce(vector.normalized * 200f);
+            //    return Task.FromResult(false);
+            //};
         }
     }
 }

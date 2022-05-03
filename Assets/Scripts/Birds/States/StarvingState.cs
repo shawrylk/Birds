@@ -64,7 +64,8 @@ namespace Assets.Scripts.Birds
                             var energy = c.gameObject.GetComponent<Food>().Energy;
                             _conductor.Context.Channel.Enqueue((BirdSignal.EnergyRegen, energy));
 
-                            birdConductor.ChangeState(idlingState);
+                            var state = Range(0, 2) == 1 ? idlingState : landingState;
+                            birdConductor.ChangeState(state);
                             _sprite.material.SetFloat("_GrayscaleAmount", 0.0f);
 
                             Destroy(c.gameObject, 0.1f);

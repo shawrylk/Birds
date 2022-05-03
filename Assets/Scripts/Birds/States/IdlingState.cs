@@ -132,7 +132,6 @@ namespace Assets.Scripts.Birds
 
                     if (++time >= timeOutHz)
                     {
-                        UnityEngine.Debug.Log("Change to hunting");
                         birdConductor.ChangeState(huntingState);
                         break;
                     }

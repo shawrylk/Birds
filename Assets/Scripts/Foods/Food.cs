@@ -58,10 +58,10 @@ namespace Assets.Scripts
                         Destroy(gameObject, 0.1f);
                         _eaten = true;
                     }
-                }
-                else
-                {
-                    _rigidbody.AddForce(new Vector2(_rigidbody.velocity.x * -2, 1) * Vector2.right, ForceMode2D.Impulse);
+                    else
+                    {
+                        _rigidbody.AddForce(new Vector2(_rigidbody.velocity.x * -2, _rigidbody.velocity.y), ForceMode2D.Impulse);
+                    }
                 }
             }
         }

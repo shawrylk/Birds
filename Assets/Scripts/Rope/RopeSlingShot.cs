@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Assets.Inputs;
+using Assets.Scripts.Birds;
+using Assets.Scripts.Utilities;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,146 +14,190 @@ namespace Assets.Scripts.Rope
     public class RopeSlingShot : MonoBehaviour
     {
 
-        public Transform StartPoint;
-        public Transform EndPoint;
+        [SerializeField] private Transform _startPoint;
+        [SerializeField] private Transform _endPoint;
 
-        private LineRenderer lineRenderer;
-        private RopeSegment[] ropeSegments;
-        private float ropeSegLen;
+        private IInput _input;
+        private LineRenderer _lineRenderer;
+        private RopeSegment[] _ropeSegments;
+        private float _ropeSegLen;
         /// <summary>
         /// Smaller means more tension
         /// </summary>
-        private float ropeSegLenPercent = 0.7f;
+        private float _ropeSegLenPercent = 0.6f;
         /// <summary>
         /// Default is 0.5f
         /// </summary>
-        private float tensionForceMultiplier = 0.9f;
-        private int segmentLength = 20;
-        private float lineWidth = 0.02f;
+        private float _tensionForceMultiplier = 0.8f;
+        private int _segmentCount = 10;
+        private float _lineWidth = 0.02f;
 
         //Sling shot 
-        private bool moveToMouse = false;
-        private Vector3 mousePositionWorld;
-        private int indexMousePos;
+        private bool _moveToMouse = false;
+        private Vector3 _mousePositionWorld;
+        private int _indexMousePos;
+        private Vector3[] _positions = null;
 
         // Use this for initialization
-        void Start()
+        void Awake()
         {
-            positions = new Vector3[segmentLength + 1];
-            this.lineRenderer = this.GetComponent<LineRenderer>();
-            Vector3 ropeStartPoint = StartPoint.position;
-            ropeSegments = new RopeSegment[segmentLength];
-            ropeSegLen = (EndPoint.position - StartPoint.position).magnitude / segmentLength * ropeSegLenPercent;
-            for (int i = 0; i < segmentLength; i++)
+            _input = Global.Items[Global.INPUT] as IInput;
+            _input.DragStartHandler += HandleSlingShot;
+            _input.DragEndHandler += (_) =>
             {
-                this.ropeSegments[i] = new RopeSegment(ropeStartPoint);
-                ropeStartPoint.y -= ropeSegLen;
+                _moveToMouse = false;
+                return Task.FromResult(false);
+            };
+            _lineRenderer = GetComponent<LineRenderer>();
+            // Because final point is not include, its line is not draw either
+            _positions = new Vector3[_segmentCount + 1];
+            _ropeSegments = new RopeSegment[_segmentCount];
+            _ropeSegLen = Vector2.Distance(_endPoint.position, _startPoint.position) / _segmentCount * _ropeSegLenPercent;
+            // Draw a straight line from top to bottom
+            var ropeStartPoint = _startPoint.position;
+            for (int i = 0; i < _segmentCount; i++)
+            {
+                _ropeSegments[i] = new RopeSegment(ropeStartPoint);
+                ropeStartPoint.y -= _ropeSegLen;
             }
+
+            //StartCoroutine(CompressBirdCollisions());
         }
-        // Update is called once per frame
+
+        private Task<bool> HandleSlingShot(Vector2 startPoint)
+        {
+            var ratio = (startPoint.x - _startPoint.position.x) / (_endPoint.position.x - _startPoint.position.x);
+            var yDistance = _startPoint.position.y - startPoint.y;
+            if (ratio > 0 && ratio < 1 && yDistance < 0.4f)
+            {
+                _indexMousePos = (int)(_segmentCount * ratio);
+                var yOffset = Mathf.Abs(startPoint.y - _ropeSegments[_indexMousePos].posNow.y);
+                if (yOffset < 0.4f)
+                {
+                    _moveToMouse = true;
+                    _mousePositionWorld = startPoint;
+                    return Task.FromResult(true);
+                }
+            }
+            _moveToMouse = false;
+            return Task.FromResult(false);
+        }
+
         void Update()
         {
-            if (Input.GetMouseButtonDown(0))
-            {
-                this.moveToMouse = true;
-            }
-            else if (Input.GetMouseButtonUp(0))
-            {
-                this.moveToMouse = false;
-            }
-            this.DrawRope();
+            //_moveToMouse = false;
+            //if (Input.GetMouseButtonDown(0))
+            //{
+            //    moveToMouse = true;
+            //}
+            //else if (Input.GetMouseButtonUp(0))
+            //{
+            //    moveToMouse = false;
+            //}
+            DrawRope();
 
-            Vector3 screenMousePos = Input.mousePosition;
-            float xStart = StartPoint.position.x;
-            float xEnd = EndPoint.position.x;
-            this.mousePositionWorld = Camera.main.ScreenToWorldPoint(new Vector3(screenMousePos.x, screenMousePos.y, 10));
-            float currX = this.mousePositionWorld.x;
+            //Vector3 screenMousePos = Input.mousePosition;
+            //float xStart = StartPoint.position.x;
+            //float xEnd = EndPoint.position.x;
+            //mousePositionWorld = Camera.main.ScreenToWorldPoint(new Vector3(screenMousePos.x, screenMousePos.y, 10));
+            //float currX = mousePositionWorld.x;
 
-            float ratio = (currX - xStart) / (xEnd - xStart);
-            if (ratio > 0)
-            {
-                this.indexMousePos = (int)(this.segmentLength * ratio);
-            }
+            //float ratio = (currX - xStart) / (xEnd - xStart);
+            //if (ratio > 0)
+            //{
+            //    indexMousePos = (int)(segmentLength * ratio);
+            //}
         }
 
         private void FixedUpdate()
         {
-            this.Simulate();
+            Simulate();
         }
 
         private void Simulate()
         {
             // SIMULATION
-            Vector2 forceGravity = new Vector2(0f, -1.2f);
+            Vector2 forceGravity = new Vector2(0f, -0.2f);
 
-            for (int i = 1; i < this.segmentLength; i++)
+            for (int i = 1; i < _segmentCount; i++)
             {
-                RopeSegment firstSegment = this.ropeSegments[i];
+                RopeSegment firstSegment = _ropeSegments[i];
                 Vector2 posDelta = firstSegment.posNow - firstSegment.posOld;
                 firstSegment.posOld = firstSegment.posNow;
                 firstSegment.posNow += posDelta;
                 firstSegment.posNow += forceGravity * Time.fixedDeltaTime;
-                this.ropeSegments[i] = firstSegment;
+                _ropeSegments[i] = firstSegment;
             }
 
             //CONSTRAINTS
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 2; i++)
             {
-                this.ApplyConstraint();
+                ApplyConstraint();
             }
         }
 
         private void ApplyConstraint()
         {
             //Constrant to First Point 
-            RopeSegment firstSegment = this.ropeSegments[0];
-            firstSegment.posNow = this.StartPoint.position;
-            this.ropeSegments[0] = firstSegment;
+            RopeSegment firstSegment = _ropeSegments[0];
+            firstSegment.posNow = _startPoint.position;
+            _ropeSegments[0] = firstSegment;
 
 
             //Constrant to Second Point 
-            RopeSegment endSegment = this.ropeSegments[this.ropeSegments.Length - 1];
-            endSegment.posNow = this.EndPoint.position;
-            this.ropeSegments[this.ropeSegments.Length - 1] = endSegment;
+            RopeSegment endSegment = _ropeSegments[_ropeSegments.Length - 1];
+            endSegment.posNow = _endPoint.position;
+            _ropeSegments[_ropeSegments.Length - 1] = endSegment;
 
-            for (int i = 0; i < this.segmentLength - 1; i++)
+            for (int i = 0; i < _segmentCount - 1; i++)
             {
-                var changeVector = this.ropeSegments[i].posNow - this.ropeSegments[i + 1].posNow;
-                float error = changeVector.magnitude - this.ropeSegLen;
+                var changeVector = _ropeSegments[i].posNow - _ropeSegments[i + 1].posNow;
+                float error = changeVector.magnitude - _ropeSegLen;
 
                 Vector2 changeAmount = changeVector.normalized * error;
 
-                if (i != 0 && i != this.segmentLength - 1)
+                if (i != 0 && i != _segmentCount - 1)
                 {
-                    this.ropeSegments[i].posNow -= changeAmount * tensionForceMultiplier;
-                    this.ropeSegments[i + 1].posNow += changeAmount * tensionForceMultiplier;
+                    _ropeSegments[i].posNow -= changeAmount * _tensionForceMultiplier;
+                    _ropeSegments[i + 1].posNow += changeAmount * _tensionForceMultiplier;
                 }
                 else
                 {
-                    this.ropeSegments[i + 1].posNow += changeAmount;
+                    _ropeSegments[i + 1].posNow += changeAmount;
                 }
 
-                if (this.moveToMouse && indexMousePos > 0 && indexMousePos < this.segmentLength - 1 && i == indexMousePos)
+                if (_moveToMouse && _indexMousePos > 0 && _indexMousePos < _segmentCount - 1 && i == _indexMousePos)
                 {
-                    this.ropeSegments[i].posNow = new Vector2(this.mousePositionWorld.x, this.mousePositionWorld.y);
-                    this.ropeSegments[i + 1].posNow = new Vector2(this.mousePositionWorld.x, this.mousePositionWorld.y);
+                    _ropeSegments[i].posNow = new Vector2(_mousePositionWorld.x, _mousePositionWorld.y);
+                    _ropeSegments[i + 1].posNow = new Vector2(_mousePositionWorld.x, _mousePositionWorld.y);
+
+                    _collisions.ForEach(c =>
+                    {
+                        if (c != null && c.gameObject != null)
+                        {
+                            c.gameObject
+                              .GetComponent<BirdBase>()
+                              ?.CooperativeChannel
+                              ?.Enqueue((BirdSignal.Fly, null));
+                        }
+                    });
+
                     _collisions.Clear();
                 }
                 if (_collisions.Count > 0)
                 {
-                    foreach (var col in _collisions.ToList())
+                    foreach (var col in _collisions)
                     {
-                        var ratio = (col.position.x - StartPoint.position.x) / (EndPoint.transform.position.x - StartPoint.transform.position.x);
+                        if (col == null || col.gameObject == null) continue;
+                        var ratio = (col.position.x - _startPoint.position.x) / (_endPoint.transform.position.x - _startPoint.transform.position.x);
                         if (ratio > 0)
                         {
-                            var index = (int)(this.segmentLength * ratio);
+                            var index = (int)(_segmentCount * ratio);
                             if (i == index)
                             {
-                                var garavity = new Vector2(0, -1f);
-                                //this.ropeSegments[i].posNow = new Vector2(col.position.x, col.position.y - 0.45f);
-                                //this.ropeSegments[i + 1].posNow = new Vector2(col.position.x, col.position.y - 0.45f);
-                                this.ropeSegments[i].posNow += garavity * Time.fixedDeltaTime;
-                                this.ropeSegments[i + 1].posNow += garavity * Time.fixedDeltaTime;
+                                var garavity = new Vector2(0, -0.06f);
+                                _ropeSegments[i].posNow += garavity * Time.fixedDeltaTime;
+                                _ropeSegments[i + 1].posNow += garavity * Time.fixedDeltaTime;
 
                             }
                         }
@@ -158,22 +205,39 @@ namespace Assets.Scripts.Rope
                 }
             }
         }
-        private Vector3[] positions = null;
+
+        //private IEnumerator CompressBirdCollisions()
+        //{
+        //    var time = new WaitForSeconds(60);
+        //    while (true)
+        //    {
+        //        yield return time;
+        //        //using var _ = _collisions.GetLock();
+        //        var count = _collisions.Count;
+        //        if (count > 0)
+        //        {
+        //            _collisions = _collisions.Where(c => c != null && c.gameObject != null).ToList();
+        //            count = count - _collisions.Count;
+        //            Debug.Log($"Compress {count} bird(s), remain {_collisions.Count} bird(s)");
+        //        }
+        //    }
+        //}
         private void DrawRope()
         {
-            float lineWidth = this.lineWidth;
-            lineRenderer.startWidth = lineWidth;
-            lineRenderer.endWidth = lineWidth;
+            float lineWidth = _lineWidth;
+            _lineRenderer.startWidth = lineWidth;
+            _lineRenderer.endWidth = lineWidth;
 
-            for (int i = 0; i < this.segmentLength; i++)
+            for (int i = 0; i < _segmentCount; i++)
             {
-                positions[i] = this.ropeSegments[i].posNow;
+                _positions[i] = _ropeSegments[i].posNow;
             }
 
-            positions[segmentLength] = EndPoint.position;
+            _positions[_segmentCount] = _endPoint.position;
+            _positions[_segmentCount].z = 0;
 
-            lineRenderer.positionCount = positions.Length;
-            lineRenderer.SetPositions(positions);
+            _lineRenderer.positionCount = _positions.Length;
+            _lineRenderer.SetPositions(_positions);
         }
 
         private List<Transform> _collisions = new List<Transform>();
@@ -191,11 +255,11 @@ namespace Assets.Scripts.Rope
                 _toRemove.Remove(collision.gameObject.transform);
             }
         }
-
         private IEnumerator OnCollisionExit2D(Collision2D collision)
         {
             _toRemove.Add(collision.gameObject.transform);
             yield return new WaitForSeconds(0.1f);
+            if (collision.gameObject == null) yield return null;
             if (_toRemove.Contains(collision.gameObject.transform))
             {
                 _collisions.Remove(collision.gameObject.transform);
@@ -211,8 +275,8 @@ namespace Assets.Scripts.Rope
 
             public RopeSegment(Vector2 pos)
             {
-                this.posNow = pos;
-                this.posOld = pos;
+                posNow = pos;
+                posOld = pos;
             }
         }
     }

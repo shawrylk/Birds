@@ -107,13 +107,12 @@ namespace Assets.Scripts
                     var (isDone, currentCash) = _cashManager.Minus(_price);
                     if (isDone)
                     {
-                        //var position = input.ScreenPosition.ToWorldCoord();
                         var food =
                             Instantiate(original: GetCurrentFood(FoodIndex),
                             position: position,
                             rotation: Quaternion.identity,
                             parent: transform);
-
+                        
                         food.name = Food.Name;
                         return Task.FromResult(true);
                     }

@@ -69,6 +69,19 @@ namespace Assets.Scripts.Birds
                 base.OnTriggerEnter2D(collision);
             }
         }
+
+        protected override void OnTriggerStay2D(Collider2D collision)
+        {
+            const float force = 5f;
+            if (collision.gameObject.CompareTag(Global.BOUNDARY_TAG))
+            {
+                if (collision.gameObject.name.ToLower() == Global.LAND_BOUNDARY)
+                {
+                    _rigidbody.AddForce(new Vector2(1, force * Time.fixedDeltaTime) * Vector2.up, ForceMode2D.Impulse);
+                }
+            }
+        }
+
         public IEnumerable<BirdState> GetAllBirdStates()
         {
             yield return GetIdlingState();
@@ -88,10 +101,11 @@ namespace Assets.Scripts.Birds
         {
             ListStates = GetAllBirdStates().ToList();
             _conductor = new BirdConductor(this);
+            var @enum = Range(0, 2) == 1 ? BirdEnum.Idling : BirdEnum.Landing;
             _conductor.Run(
                 data: new BirdContext(),
                 state: ListStates
-                    .First(s => s.ID == BirdEnum.Hunting));
+                    .First(s => s.ID == @enum));
             CooperativeChannel = _conductor.Context.Channel;
         }
 

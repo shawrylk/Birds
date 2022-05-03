@@ -22,6 +22,9 @@ namespace Assets.Scripts.Utilities
         public const string ENEMY_MANAGER_TAG = "EnemyManager";
         public const string ENEMY_TAG = "Enemy";
         public const string SMALL_FISH_TAG = "SmallFish";
+        public const string ELECTRIC_LINE_TAG = "ElectricLine";
+        public const string TREE_TAG = "Tree";
+        public const string HOUSE_TAG = "House";
         public const string INPUT = "Input";
 
         public const string BIRDS_MARK_LAYER = "Birds";
@@ -66,7 +69,9 @@ namespace Assets.Scripts.Utilities
             //}
             var screenHeightInUnit = camera.orthographicSize * 2;
             UnitsPerPixel = screenHeightInUnit / Screen.height;
-            Debug.Log(camera.orthographicSize);
+            Debug.Log("orthographicSize " + camera.orthographicSize);
+            Debug.Log("UnitsPerPixel " + UnitsPerPixel);
+            Debug.Log("PixelsPerUnit " + 1 / UnitsPerPixel);
         }
     }
 }

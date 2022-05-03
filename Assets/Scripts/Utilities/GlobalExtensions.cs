@@ -69,6 +69,39 @@ namespace Assets.Scripts.Utilities
             return new Vector2(worldCoordiantes.x, worldCoordiantes.y);
         }
 
+        public static Vector3 ToWorldCoord(this Vector3 from)
+        {
+            var worldCoordiantes = Camera.main.ScreenToWorldPoint(from);
+            return worldCoordiantes;
+        }
+
+        public const float GameRatio = 640 / 360f;
+        public const float GameWidthPixel = 640f;
+        public static readonly float GameHeightPixel = GameWidthPixel / Screen.width * Screen.height;
+        public static readonly float GameWidthUnit = GameWidthPixel / 100f;
+        public static readonly float GameHeightUnit = GameWidthUnit / GameRatio;
+
+        /// <summary>
+        /// Base offset is center point (0, 0)
+        /// Landscape colliders have base offset from bottom point (0, yBot)
+        /// </summary>
+        /// <param name="from"></param>
+        /// <returns></returns>
+        public static Vector2 ToUnit(this Vector2 from)
+        {
+            // 1. Convert world pixel to game pixel
+            // 2. Convert game pixel to game unit
+            return new Vector2(
+                x: from.x / (GameWidthPixel / 2) * (GameWidthUnit / 2),
+                y: (from.y - (GameHeightPixel / 2)) / (GameHeightPixel / 2) * (GameHeightUnit / 2));
+        }
+        //public static Vector2 ToScreenCoord(this Vector2 from)
+        //{
+        //    var worldCoordiantes = new Vector3(from.x, from.y, Camera.main.nearClipPlane);
+        //    var screenCoordiantes = Camera.main.WorldToScreenPoint(worldCoordiantes);
+        //    return new Vector2(screenCoordiantes.x, screenCoordiantes.y);
+        //}
+
         public static Func<float, float> GetSToHzHandler(this float timeStepSeconds)
         {
             return (seconds) => 1 / timeStepSeconds * seconds;

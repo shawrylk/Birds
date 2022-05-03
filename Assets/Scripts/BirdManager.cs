@@ -16,8 +16,7 @@ public class BirdManager : BaseScript
     private static BirdManager _instance = null;
     public static BirdManager Instance => _instance;
 
-    [SerializeField]
-    private GameObject[] _birdPrefabs = null;
+    [SerializeField] private GameObject[] _birdPrefabs = null;
 
     private CashManager _cashManager = null;
     public int DefaultBirdCount = 2;
@@ -60,13 +59,13 @@ public class BirdManager : BaseScript
 
     private Action<int> GetSpawnBirdHandler()
     {
-        var offset = 2f;
+        var offset = -50.ToUnit();
         var horizontalMargin = new Vector3(offset, 0, 0);
         var verticalMargin = new Vector3(0, offset, 0);
-        var left = _boundaries[Global.LEFT_BOUNDARY].position + horizontalMargin;
-        var right = _boundaries[Global.RIGHT_BOUNDARY].position - horizontalMargin;
-        var top = _boundaries[Global.TOP_BOUNDARY].position - verticalMargin;
-        gameObject.transform.position = _boundaries[Global.TOP_BOUNDARY].position;
+        var left = _boundaries[Global.LEFT_BOUNDARY].position - horizontalMargin;
+        var right = _boundaries[Global.RIGHT_BOUNDARY].position + horizontalMargin;
+        var top = _boundaries[Global.TOP_BOUNDARY].position + verticalMargin;
+        //gameObject.transform.position = _boundaries[Global.BOTTOM_BOUNDARY].position + new Vector3(0, _boundaries[Global.BOTTOM_BOUNDARY].localScale.y / 2, 0);
 
         return (int index) =>
         {
@@ -87,7 +86,8 @@ public class BirdManager : BaseScript
 
                 AllBirds.Add(newBird);
 
-                newBird.GetComponent<Rigidbody2D>().AddForce(Vector2.down * UnityEngine.Random.Range(20f, 40f));
+                newBird.GetComponent<Rigidbody2D>()
+                    .AddForce(Vector2.down * UnityEngine.Random.Range(20f, 40f));
             }
         };
     }
