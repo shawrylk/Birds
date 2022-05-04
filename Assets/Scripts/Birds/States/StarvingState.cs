@@ -50,7 +50,7 @@ namespace Assets.Scripts.Birds
 
                 _animator.enabled = true;
 
-                _animator.Play("bird_1_starving");
+                //_animator.Play("Flying");
 
                 while (true)
                 {

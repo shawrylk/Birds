@@ -80,6 +80,7 @@ namespace Assets.Scripts.Birds
                     _rigidbody.AddForce(new Vector2(1, force * Time.fixedDeltaTime) * Vector2.up, ForceMode2D.Impulse);
                 }
             }
+            base.OnTriggerStay2D(collision);
         }
 
         public IEnumerable<BirdState> GetAllBirdStates()

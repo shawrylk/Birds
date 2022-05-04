@@ -81,7 +81,7 @@ namespace Assets.Scripts
                 if (isDone)
                 {
                     FoodCount++;
-                    UpgradeFoodCountTMP.text = $"Count: {FoodCount}\n300";
+                    UpgradeFoodCountTMP.text = $"{FoodCount + 1}Qty\n300";
 
 
                     if (FoodCount == MAX_FOOD_COUNT)

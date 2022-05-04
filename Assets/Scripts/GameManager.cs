@@ -9,10 +9,21 @@ namespace Assets.Scripts
 {
     public class GameManager : MonoBehaviour
     {
+        public GameObject LoadingScene;
         public GameObject FoodsManager { get; set; }
         public GameObject CashManager { get; set; }
         private void Awake()
         {
+            if (LoadingScene != null)
+            {
+                LoadingScene.SetActive(true);
+                IEnumerator load()
+                {
+                    yield return new WaitForSeconds(1);
+                    LoadingScene.SetActive(false);
+                }
+                StartCoroutine(load());
+            }
             DontDestroyOnLoad(this.gameObject);
         }
 

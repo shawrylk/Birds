@@ -39,7 +39,7 @@ TagManager:
   - Player
   - LandableEdge
   - LandableBird
-  - 
+  - Animal
   - 
   - 
   - 
@@ -59,9 +59,12 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Cash
+  - name: 
     uniqueID: 4112341211
     locked: 0
-  - name: BIrd
+  - name: 
     uniqueID: 708552283
+    locked: 0
+  - name: 
+    uniqueID: 3981394131
     locked: 0

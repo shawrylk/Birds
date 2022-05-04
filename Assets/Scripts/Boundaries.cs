@@ -8,8 +8,7 @@ using UnityEngine.UI;
 [DefaultExecutionOrder(Global.BOUNDARIES_ORDER)]
 public class Boundaries : MonoBehaviour
 {
-    [SerializeField] private int _topOffset = -30;
-    [SerializeField] private int _bottomOffset = 0;
+    [SerializeField] private int _leftOffset = -40;
     private void Awake()
     {
         var boundaries = gameObject
@@ -24,25 +23,23 @@ public class Boundaries : MonoBehaviour
     }
     private void SetUpBoundaries(Dictionary<string, Transform> boundaries, float unit)
     {
-        var topOffset = _topOffset.ToUnit();
-        var bottomOffset = _bottomOffset.ToUnit();
         var heightInUnit = Screen.height * unit;
         var widthInUnit = Screen.width * unit;
         var offset = 0;
         var boundaryWidth = 1;
         var boundaryHeight = 1;
-        //var bottom2Offset = -0.5f;
+        var leftOffset = _leftOffset.ToUnit();
 
-        boundaries[Global.LEFT_BOUNDARY].transform.position = new Vector3(widthInUnit / -2f - offset - boundaryWidth / 2f, 0, 0);
+        boundaries[Global.LEFT_BOUNDARY].transform.position = new Vector3(widthInUnit / -2f - offset - boundaryWidth / 2f + leftOffset, 0, 0);
         boundaries[Global.LEFT_BOUNDARY].transform.localScale = new Vector3(boundaryWidth, heightInUnit + offset, 0);
 
         boundaries[Global.RIGHT_BOUNDARY].transform.position = new Vector3(widthInUnit / 2f + offset + boundaryWidth / 2f, 0, 0);
         boundaries[Global.RIGHT_BOUNDARY].transform.localScale = new Vector3(boundaryWidth, heightInUnit + offset, 0);
 
-        boundaries[Global.TOP_BOUNDARY].transform.position = new Vector3(0, heightInUnit / 2f + offset + boundaryHeight / 2f + topOffset, 0);
+        boundaries[Global.TOP_BOUNDARY].transform.position = new Vector3(0, heightInUnit / 2f + offset + boundaryHeight / 2f, 0);
         boundaries[Global.TOP_BOUNDARY].transform.localScale = new Vector3(widthInUnit + offset, boundaryHeight, 0);
 
-        boundaries[Global.BOTTOM_BOUNDARY].transform.position = new Vector3(0, heightInUnit / -2f - offset - boundaryHeight / 2f + bottomOffset, 0);
+        boundaries[Global.BOTTOM_BOUNDARY].transform.position = new Vector3(0, heightInUnit / -2f - offset - boundaryHeight / 2f, 0);
         boundaries[Global.BOTTOM_BOUNDARY].transform.localScale = new Vector3(widthInUnit + offset, boundaryHeight, 0);
 
         //boundaries[Global.BOTTOM2_BOUNDARY].transform.position = new Vector3(0, heightInUnit / -2f - offset - boundaryHeight / 2f + bottom2Offset, 0);

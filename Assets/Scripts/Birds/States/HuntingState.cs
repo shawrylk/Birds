@@ -82,14 +82,14 @@ namespace Assets.Scripts.Birds
                     var position = positionHandler(targetFinder);
                     pidHandler(position, timeStep);
 
-                    if (_rigidbody.velocity.sqrMagnitude > 3.0f)
-                    {
-                        _animator.Play("bird_1_fly_fast");
-                    }
-                    else
-                    {
-                        _animator.Play("fly");
-                    }
+                    //if (_rigidbody.velocity.sqrMagnitude > 3.0f)
+                    //{
+                    //    _animator.Play("Flying");
+                    //}
+                    //else
+                    //{
+                    //    _animator.Play("Flying");
+                    //}
 
                     if (time++ >= timeOutHz)
                     {

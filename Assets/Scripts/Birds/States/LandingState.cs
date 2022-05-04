@@ -58,8 +58,8 @@ namespace Assets.Scripts.Birds
                 var positionHandler = transform.GetPositionResolver();
                 var (pidHandler, resetPid) = PidExtensions.GetPidHandler(options =>
                 {
-                    options.X = (6f, 5f, 7.1f);
-                    options.Y = (6f, 5f, 7.1f);
+                    options.X = (9f, 9f, 4.1f);
+                    options.Y = (9f, 9f, 4.1f);
                     options.ClampX = (-7.4f, 7.4f);
                     options.ClampY = (-7.4f, 7.4f);
                     options.Transform = transform;
@@ -74,13 +74,16 @@ namespace Assets.Scripts.Birds
                     //.First()
                     //.point
                     .ToUnit(); // Need to convert to game unit
+                // Above edge to be able to land
+                nearestPoint += new Vector2(0f, 0.15f);
 
                 var landingBird = transform.GetChild(0).GetComponent<Collider2D>();
                 using var releaser = new Releaser(() =>
                 {
                     landingBird.enabled = false;
+                    _animator.SetBool("isLanding", false);
+                    _rigidbody.gravityScale = 0;
                     //_collider.isTrigger = true;
-                    //_rigidbody.gravityScale = 0;
                     ////Physics2D.IgnoreLayerCollision(LayerMask.GetMask("Birds"), LayerMask.GetMask("LandableEdge"), true);
                     //Physics2D.IgnoreCollision(_collider, _edgeColliders[0], true);
                     //Physics2D.IgnoreCollision(_collider, _edgeColliders[1], true);
@@ -92,18 +95,21 @@ namespace Assets.Scripts.Birds
                 {
                     yield return new WaitForSeconds(timeStep);
 
+                    Debug.Log($"nearest = {nearestPoint}, position = {transform.position}, y ={ transform.position.y - nearestPoint.y}, distance = {Vector2.Distance(transform.position, nearestPoint)}");
+
                     if (!isPlaying
-                        && transform.position.y - nearestPoint.y > 0.02f
-                        && Vector2.Distance(transform.position, nearestPoint) < 0.05f)
+                        && transform.position.y - nearestPoint.y > 0.05f
+                        && Vector2.Distance(transform.position, nearestPoint) < 0.5f)
                     {
                         isPlaying = true;
                         //Debug.Log($"{nearestPoint} - {(Vector2)transform.position}");
-                        _animator.Play("Land");
+                        //_animator.Play("Landing");
+                        _animator.SetBool("isLanding", true);
                         resetPid();
                         _rigidbody.velocity = Vector2.zero;
                         landingBird.enabled = true;
+                        _rigidbody.gravityScale = 0.1f;
                         //_collider.isTrigger = false;
-                        //_rigidbody.gravityScale = 0.1f;
                         ////Physics2D.IgnoreLayerCollision(LayerMask.GetMask("Birds"), LayerMask.GetMask("LandableEdge"), true);
                         //Physics2D.IgnoreCollision(_collider, _edgeColliders[0], false);
                         //Physics2D.IgnoreCollision(_collider, _edgeColliders[1], false);

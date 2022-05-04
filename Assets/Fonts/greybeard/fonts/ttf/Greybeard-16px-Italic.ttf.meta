@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: ec3e4fe99d702b947a73ee1c7045554f
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Greybeard 16px
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: eb4dfec60c5c91a48a74182f44c566b3, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

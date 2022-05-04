@@ -130,7 +130,7 @@ namespace Assets.Scripts.Rope
             }
 
             //CONSTRAINTS
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 5; i++)
             {
                 ApplyConstraint();
             }
@@ -259,7 +259,17 @@ namespace Assets.Scripts.Rope
         {
             _toRemove.Add(collision.gameObject.transform);
             yield return new WaitForSeconds(0.1f);
-            if (collision.gameObject == null) yield return null;
+            try
+            {
+                if (collision == null || collision.gameObject == null)
+                {
+                    yield break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(ex.ToString());
+            }
             if (_toRemove.Contains(collision.gameObject.transform))
             {
                 _collisions.Remove(collision.gameObject.transform);

@@ -30,18 +30,18 @@ namespace Assets.Scripts
         {
             if (collision.gameObject.CompareTag(Global.BOUNDARY_TAG))
             {
-                if (string.Compare(collision.gameObject.name, Global.BOTTOM_BOUNDARY, true) == 0)
+                if (string.Compare(collision.gameObject.name, Global.LAND_BOUNDARY, true) == 0)
                 {
                     Destroy(gameObject, 5f);
                 }
-                else if (string.Compare(collision.gameObject.name, Global.TOP_BOUNDARY, true) == 0)
-                {
-                    var (isDone, _) = _cashManager.Add(Value);
-                    if (isDone)
-                    {
-                        Destroy(gameObject);
-                    }
-                }
+                //else if (string.Compare(collision.gameObject.name, Global.TOP_BOUNDARY, true) == 0)
+                //{
+                //    var (isDone, _) = _cashManager.Add(Value);
+                //    if (isDone)
+                //    {
+                //        Destroy(gameObject);
+                //    }
+                //}
             }
         }
 

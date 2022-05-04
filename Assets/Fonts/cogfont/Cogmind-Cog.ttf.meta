@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 89487f14d61a78f49b2a8156e34e9f03
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Cogmind
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 25c7f78fbc38cc6469b7d7e64d7e76b1, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
