@@ -14,6 +14,7 @@ namespace Assets.Scripts.Birds
 {
     public class Crow : BirdBase
     {
+        private bool testGit = false;
         private int _foodIndex = 0;
         private BirdManager _birdManager;
         private FishManager _fishManager;
